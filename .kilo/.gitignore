@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+.env
+prisma/dev.db
+.next/
+.kilo/node_modules/

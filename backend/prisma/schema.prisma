@@ -1,0 +1,81 @@
+// @lifecycle ACTIVE — Database schema for Floweng Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(STUDENT)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userLessons UserLesson[]
+
+  @@map("users")
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Lesson {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  difficulty  Difficulty @default(BEGINNER)
+  order       Int
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  exercises   Exercise[]
+  userLessons UserLesson[]
+
+  @@map("lessons")
+}
+
+model Exercise {
+  id          String   @id @default(uuid())
+  question    String
+  answer      String
+  options     String?
+  type        String   @default("multiple_choice")
+  order       Int
+  lessonId    String   @map("lesson_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("exercises")
+}
+
+model UserLesson {
+  id        String   @id @default(uuid())
+  completed Boolean  @default(false)
+  score     Int?
+  userId    String   @map("user_id")
+  lessonId  String   @map("lesson_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("user_lessons")
+}

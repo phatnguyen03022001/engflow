@@ -1,0 +1,10 @@
+{
+  "name": "floweng",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Floweng — English Learning Platform",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}
