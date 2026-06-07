@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -12,6 +10,27 @@ services:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U floweng -d floweng']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: engflow
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: postgresql://floweng:floweng@postgres:5432/floweng?schema=public
+      JWT_SECRET: change-me-in-production
+      JWT_EXPIRES_IN: 7d
+      PORT: '3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:

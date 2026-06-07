@@ -79,3 +79,206 @@ model UserLesson {
   @@unique([userId, lessonId])
   @@map("user_lessons")
 }
+
+// ─── Recommendation Registry (TASK-019) ──────────────────────────────────────
+
+model Recommendation {
+  id                   String   @id @default(uuid())
+  recId                String   @unique @map("rec_id")
+  mode                 String
+  decisionType         String   @map("decision_type")
+  decisionDomain       String   @map("decision_domain")
+  querySummary         String   @map("query_summary")
+  projectId            String?  @map("project_id")
+  constraints          String[]
+  sourcesConsulted     String[] @map("sources_consulted")
+  architectureVersion  String?  @map("architecture_version")
+  constitutionVersion  String?  @map("constitution_version")
+
+  // Winner fields
+  recommendedOption    String   @map("recommended_option")
+  weightedScore        Float    @map("weighted_score")
+  scoreMargin          Float    @map("score_margin")
+  justification        String
+
+  // Confidence
+  confidenceLevel      String   @map("confidence_level")
+  confidenceScore      Int      @map("confidence_score")
+  ecs                  Float?   @map("ecs")
+  sqs                  Float?   @map("sqs")
+  cs                   Float?   @map("cs")
+  unknownsCount        Int?     @map("unknowns_count")
+  unknownsCritical     Int?     @map("unknowns_critical")
+
+  // Forecast
+  expectedOutcome      String?  @map("expected_outcome")
+  debtForecast         String?  @map("debt_forecast")
+  timelineToValue      String?  @map("timeline_to_value")
+  prerequisites        String[]
+  whenToRevisit        String?  @map("when_to_revisit")
+
+  // Outcome tracking
+  trackingStatus       String   @default("PENDING") @map("tracking_status")
+  finalOutcome         String?  @map("final_outcome")
+  assessedAt           DateTime? @map("assessed_at")
+  implementedOption    String?  @map("implemented_option")
+  regretFlag           Boolean? @map("regret_flag")
+  reversalCount        Int      @default(0) @map("reversal_count")
+
+  // Metadata
+  reasoningTrace       String?  @map("reasoning_trace")
+  advisoryReportRef    String?  @map("advisory_report_ref")
+  modelVersion         String?  @map("model_version")
+  escalationHistory    Json?    @map("escalation_history")
+
+  // Relations
+  options              RecommendationOption[]
+  successCriteria      String[] @map("success_criteria")
+  predictedRisks       Json?    @map("predicted_risks")
+  riskMitigations      String[] @map("risk_mitigations")
+  checkpoints          Checkpoint[]
+
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@index([decisionType])
+  @@index([decisionDomain])
+  @@index([trackingStatus])
+  @@index([trackingStatus, finalOutcome])
+  @@index([createdAt])
+  @@index([decisionDomain, trackingStatus])
+  @@map("recommendations")
+}
+
+model RecommendationOption {
+  id                String         @id @default(uuid())
+  recommendationId  String         @map("recommendation_id")
+  label             String
+  description       String
+  score             Float
+  recommendation    Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  @@map("recommendation_options")
+}
+
+model Checkpoint {
+  id                  String         @id @default(uuid())
+  recommendationId    String         @map("recommendation_id")
+  checkpoint          String
+  evaluatedAt         DateTime?      @map("evaluated_at")
+  evaluator           String         @default("ask")
+  evidenceSources     String[]       @map("evidence_sources")
+
+  // Implementation
+  wasImplemented      Boolean?       @map("was_implemented")
+  implementedOption   String?        @map("implemented_option")
+  implementationFaith String?        @map("implementation_faith")
+  divergenceReason    String?        @map("divergence_reason")
+
+  // Outcome
+  problemSolved       Boolean?       @map("problem_solved")
+  solutionScore       Int?           @map("solution_score")
+  debtIntroduced      String?        @map("debt_introduced")
+  performanceImpact   String?        @map("performance_impact")
+  teamSatisfaction    String?        @map("team_satisfaction")
+
+  // Risk validation
+  risksMaterialized   Json?          @map("risks_materialized")
+  risksAvoided        Json?          @map("risks_avoided")
+  missedRisks         Json?          @map("missed_risks")
+  riskAssessmentAcc   Int?           @map("risk_assessment_acc")
+
+  // Forecast validation
+  forecastAccurate    Boolean?       @map("forecast_accurate")
+  forecastDeviation   String?        @map("forecast_deviation")
+  timelineAccurate    Boolean?       @map("timeline_accurate")
+
+  // Reversal
+  wasReplaced         Boolean?       @map("was_replaced")
+  replacementReason   String?        @map("replacement_reason")
+  wasReversedByAdr    Boolean?       @map("was_reversed_by_adr")
+
+  // Verdict
+  checkpointVerdict   String?        @map("checkpoint_verdict")
+  verdictConfidence   String?        @map("verdict_confidence")
+  notes               String?
+
+  scheduleAt          DateTime       @map("schedule_at")
+  completedAt         DateTime?      @map("completed_at")
+
+  recommendation      Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleAt])
+  @@index([recommendationId, evaluatedAt])
+  @@unique([recommendationId, checkpoint])
+  @@map("checkpoints")
+}
+
+model DecisionMemory {
+  id                  String   @id @default(uuid())
+  memoryId            String   @unique @map("memory_id")
+  domain              String
+  technology          String
+  projectId           String   @default("__global__") @map("project_id")
+  recommendationId    String?  @map("recommendation_id")
+  outcome             String
+  solutionScore       Int?     @map("solution_score")
+  contextFactors      Json?    @map("context_factors")
+  successFactors      String[] @map("success_factors")
+  failureFactors      String[] @map("failure_factors")
+  applicabilityScore  Float?   @map("applicability_score")
+  referenceCount      Int      @default(0) @map("reference_count")
+  decayWeight         Float    @default(1.0) @map("decay_weight")
+
+  createdAt           DateTime @default(now()) @map("created_at")
+  lastReferencedAt    DateTime? @map("last_referenced_at")
+  expiresAt           DateTime? @map("expires_at")
+
+  @@index([domain])
+  @@index([lastReferencedAt])
+  @@unique([domain, technology, projectId])
+  @@map("decision_memories")
+}
+
+model TrustScore {
+  id                String   @id @default(uuid())
+  level             String
+  domain            String?
+  decisionType      String?  @map("decision_type")
+  score             Float
+  sampleSize        Int      @map("sample_size")
+  priorAlpha        Int      @map("prior_alpha")
+  priorBeta         Int      @map("prior_beta")
+  lastOutcomeAt     DateTime? @map("last_outcome_at")
+  decayedAt         DateTime? @map("decayed_at")
+  nextRecalculation DateTime? @map("next_recalculation")
+
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@unique([level, domain, decisionType])
+  @@map("trust_scores")
+}
+
+model AccuracySnapshot {
+  id                    String   @id @default(uuid())
+  snapshotDate          DateTime @default(now()) @map("snapshot_date")
+  totalRecommendations  Int      @map("total_recommendations")
+  totalAssessed         Int      @map("total_assessed")
+  overallAccuracy       Float?   @map("overall_accuracy")
+  weightedAccuracy      Float?   @map("weighted_accuracy")
+  brierScore            Float?   @map("brier_score")
+  confidenceCalibration Json?    @map("confidence_calibration")
+  falsePositiveRate     Float?   @map("false_positive_rate")
+  falseNegativeRate     Float?   @map("false_negative_rate")
+  regretRate            Float?   @map("regret_rate")
+  reversalRate          Float?   @map("reversal_rate")
+  forecastAccuracy      Float?   @map("forecast_accuracy")
+  implementationRate    Float?   @map("implementation_rate")
+  trend                 String?
+
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@index([snapshotDate])
+  @@map("accuracy_snapshots")
+}

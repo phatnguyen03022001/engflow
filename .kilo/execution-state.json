@@ -1,5 +1,6 @@
 {
   "phase": "COMMITTED",
-  "locked": true,
-  "timestamp": 1780736248326
+  "locked": false,
+  "timestamp": 1780874586000,
+  "unlocked_at": "2026-06-08T01:23:06+07:00"
 }
