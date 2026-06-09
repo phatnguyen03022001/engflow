@@ -86,7 +86,7 @@ export class AnalyticsService {
     const totalExecutions = grandTotal;
 
     // Average duration per agent type from ExecutionPhase
-    const phaseWhere: any = { ...where };
+    const phaseWhere: Record<string, unknown> = { ...where };
     if (filters.agentType) {
       phaseWhere.agentType = filters.agentType;
     }
@@ -182,15 +182,15 @@ export class AnalyticsService {
   async getBottlenecks(
     filters: QueryAnalyticsDto,
   ): Promise<{ items: BottleneckRow[]; total: number }> {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (filters.agentType) {
       where.agentType = filters.agentType;
     }
-    if (filters.from) {
-      where.recordedAt = { ...where.recordedAt, gte: filters.from };
-    }
-    if (filters.to) {
-      where.recordedAt = { ...where.recordedAt, lte: filters.to };
+    if (filters.from || filters.to) {
+      const recordedAt: Record<string, Date> = {};
+      if (filters.from) recordedAt.gte = filters.from;
+      if (filters.to) recordedAt.lte = filters.to;
+      where.recordedAt = recordedAt;
     }
 
     const groups = await this.prisma.executionPhase.groupBy({

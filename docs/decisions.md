@@ -2,7 +2,7 @@
 
 # Architecture Decision Records
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-10
 
 This file indexes all Architecture Decision Records (ADRs) for the Floweng project.
 See `docs/decisions/` for individual ADR documents.
@@ -23,8 +23,14 @@ See `docs/decisions/` for individual ADR documents.
 | ADR-012 | Context Manager Architecture | Active | Multi-source context assembly within memory/ module with tiered token budget strategy. |
 | ADR-013 | Drift Detection Mechanism | Active | Cron-based architecture and policy compliance monitoring with auto-resolve capability. |
 | ADR-014 | Analytics Dashboard | Active | Unified analytics within evaluation/ module — no separate analytics module. |
+| ADR-015 | Runtime Verification Integration | Active | POST_VERIFY executes whitelisted build/lint/test commands. *(§1-2 partially superseded by ADR-017)* |
+| ADR-016 | Debug Agent Activation | Active | Activates DEFERRED DEBUG agent with diagnosis-first workflow and 3 evaluation metrics. |
+| ADR-017 | Execution Shift to CODE Agent | Active | Runtime verification moves from POST_VERIFY to CODE due to platform permission constraint. CODE executes build/lint/test, POST_VERIFY reviews report. |
+| ADR-ASK-001 | Agent Routing Governance Specification | Active | Establishes ASK v2 as the Virtual CTO Router — unified routing + advisory gateway. Defines 8-agent catalog, 4 pillar principles, standardized routing output format, decision matrix, and session management rules. Source of truth for all ASK v2 routing behavior. |
 
 ---
+
+**Note:** ADR-ASK-001 introduces the ASK-XXX sub-series for routing governance ADRs, distinct from the product ADR series (ADR-001 through ADR-017).
 
 ## Conventions
 

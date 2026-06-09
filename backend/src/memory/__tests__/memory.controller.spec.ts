@@ -21,7 +21,7 @@ describe('MemoryController', () => {
     getSummary: jest.fn(),
     decayAll: jest.fn(),
     cleanupStale: jest.fn(),
-  } as any;
+  } as Record<string, jest.Mock>;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -76,9 +76,9 @@ describe('MemoryController', () => {
         minConfidence: 0.5,
       };
       const expected = [{ memory: { id: 'mem-1' }, applicabilityScore: 0.8 }];
-      mockMemoryService.querySimilar.mockResolvedValue(expected as any);
+      mockMemoryService.querySimilar.mockResolvedValue(expected);
 
-      const result = await controller.querySimilar(query as any);
+      const result = await controller.querySimilar(query);
 
       expect(mockMemoryService.querySimilar).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -95,7 +95,7 @@ describe('MemoryController', () => {
       const query = { contextJson: 'invalid-json' };
       mockMemoryService.querySimilar.mockResolvedValue([]);
 
-      const result = await controller.querySimilar(query as any);
+      const result = await controller.querySimilar(query);
 
       expect(mockMemoryService.querySimilar).toHaveBeenCalledWith(
         expect.objectContaining({ contextJson: undefined }),
@@ -110,9 +110,9 @@ describe('MemoryController', () => {
     it('should return top successful patterns', async () => {
       const query = { agentType: AgentType.PLAN, limit: 5 };
       const expected = [{ taskType: 'LEVEL_2', successRate: 100 }];
-      mockMemoryService.getTopPatterns.mockResolvedValue(expected as any);
+      mockMemoryService.getTopPatterns.mockResolvedValue(expected);
 
-      const result = await controller.getSuccessfulPatterns(query as any);
+      const result = await controller.getSuccessfulPatterns(query);
 
       expect(mockMemoryService.getTopPatterns).toHaveBeenCalledWith(
         AgentType.PLAN,
@@ -125,7 +125,7 @@ describe('MemoryController', () => {
     it('should default limit to 10 when not provided', async () => {
       mockMemoryService.getTopPatterns.mockResolvedValue([]);
 
-      await controller.getSuccessfulPatterns({} as any);
+      await controller.getSuccessfulPatterns({});
 
       expect(mockMemoryService.getTopPatterns).toHaveBeenCalledWith(
         undefined,
@@ -141,9 +141,9 @@ describe('MemoryController', () => {
     it('should return top failed patterns', async () => {
       const query = { agentType: AgentType.CODE, limit: 3 };
       const expected = [{ taskType: 'LEVEL_1', successRate: 0 }];
-      mockMemoryService.getTopPatterns.mockResolvedValue(expected as any);
+      mockMemoryService.getTopPatterns.mockResolvedValue(expected);
 
-      const result = await controller.getFailedPatterns(query as any);
+      const result = await controller.getFailedPatterns(query);
 
       expect(mockMemoryService.getTopPatterns).toHaveBeenCalledWith(
         AgentType.CODE,
@@ -159,7 +159,7 @@ describe('MemoryController', () => {
   describe('GET /memories/summary', () => {
     it('should return summary without agentType filter', async () => {
       const expected = { totalMemories: 10, byAgentType: { ROUTER: 4 } };
-      mockMemoryService.getSummary.mockResolvedValue(expected as any);
+      mockMemoryService.getSummary.mockResolvedValue(expected);
 
       const result = await controller.getSummary(undefined);
 
@@ -168,7 +168,7 @@ describe('MemoryController', () => {
     });
 
     it('should return summary filtered by agentType', async () => {
-      mockMemoryService.getSummary.mockResolvedValue({} as any);
+      mockMemoryService.getSummary.mockResolvedValue({});
 
       await controller.getSummary(AgentType.ROUTER);
 
@@ -181,7 +181,7 @@ describe('MemoryController', () => {
   describe('POST /memories/from-execution/:executionId', () => {
     it('should create memories from execution', async () => {
       const expected = [{ id: 'mem-1' }];
-      mockMemoryService.createFromExecution.mockResolvedValue(expected as any);
+      mockMemoryService.createFromExecution.mockResolvedValue(expected);
 
       const result = await controller.createFromExecution('EXEC-001');
 
@@ -258,7 +258,7 @@ describe('GET /agent-context', () => {
           id: 'm1',
           taskType: 'BUG_FIX',
           agentType: 'CODE',
-        } as any,
+        },
         similarity: 0.9,
         outcomeWeight: 1,
         applicabilityScore: 0.85,

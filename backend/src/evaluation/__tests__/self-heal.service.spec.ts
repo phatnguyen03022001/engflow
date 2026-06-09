@@ -8,8 +8,8 @@ import { PrismaService } from '../../shared/prisma/prisma.service';
 
 describe('SelfHealService', () => {
   let service: SelfHealService;
-  let prisma: any;
-  let metricService: any;
+  let prisma: Record<string, Record<string, jest.Mock>>;
+  let metricService: Record<string, jest.Mock>;
 
   const baseExecution = (overrides: Record<string, unknown> = {}) => ({
     id: 'exec-1',

@@ -66,9 +66,9 @@ export class DecisionMemoryService {
     try {
       const memOutcome = outcomeMap[recommendation.finalOutcome] ?? 'FAILURE';
       await this.memoryService.createMemory({
-        agentType: 'PLAN' as any,
+        agentType: 'PLAN' as unknown as import('../../memory/interfaces/agent-memory.interface').AgentType,
         taskType: 'RECOMMENDATION_ASSESSMENT',
-        outcome: memOutcome as any,
+        outcome: memOutcome as unknown as import('../../memory/interfaces/agent-memory.interface').MemoryOutcome,
         success: recommendation.finalOutcome === 'SUCCESS',
         decision: recommendation.recommendedOption,
         context: contextFactors as Record<string, unknown>,

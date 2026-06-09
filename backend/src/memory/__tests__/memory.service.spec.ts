@@ -7,7 +7,7 @@ import { AgentType, MemoryOutcome } from '../interfaces/agent-memory.interface';
 
 describe('MemoryService', () => {
   let service: MemoryService;
-  let prisma: any;
+  let prisma: unknown;
 
   const mockPrisma = {
     agentMemory: {
@@ -258,7 +258,7 @@ describe('MemoryService', () => {
 
       const createCalls = mockPrisma.agentMemory.create.mock.calls;
       const routerCall = createCalls.find(
-        (c: any[]) => c[0].data.agentType === 'ROUTER',
+        (c: unknown[]) => (c[0] as { data: { agentType: string } }).data.agentType === 'ROUTER',
       );
       expect(routerCall).toBeDefined();
       const lessons = routerCall[0].data.lessonsLearned;

@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateProviderDto } from '../dto/create-provider.dto';
 import { CreateModelDto } from '../dto/create-model.dto';
+import { ModelTier, ModelCapability } from '../interfaces/model-registry.interface';
 
 @Injectable()
 export class RegistryService {
@@ -97,7 +98,7 @@ export class RegistryService {
     const where: Prisma.ModelRegistryWhereInput = {};
 
     if (filters?.tier) {
-      where.tier = filters.tier as any;
+      where.tier = filters.tier as ModelTier;
     }
     if (filters?.providerId) {
       where.providerId = filters.providerId;
@@ -106,7 +107,7 @@ export class RegistryService {
       where.isActive = filters.isActive;
     }
     if (filters?.capabilities && filters.capabilities.length > 0) {
-      where.capabilities = { hasSome: filters.capabilities as any };
+      where.capabilities = { hasSome: filters.capabilities as ModelCapability[] };
     }
 
     return this.prisma.modelRegistry.findMany({
@@ -139,7 +140,7 @@ export class RegistryService {
 
     const updateData: Prisma.ModelRegistryUpdateInput = {};
     if (data.displayName !== undefined) updateData.displayName = data.displayName;
-    if (data.tier !== undefined) updateData.tier = data.tier as any;
+    if (data.tier !== undefined) updateData.tier = data.tier;
     if (data.capabilities !== undefined) updateData.capabilities = data.capabilities;
     if (data.contextWindow !== undefined) updateData.contextWindow = data.contextWindow;
     if (data.maxOutputTokens !== undefined) updateData.maxOutputTokens = data.maxOutputTokens;

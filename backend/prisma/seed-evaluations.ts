@@ -5,8 +5,6 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 interface PhaseSeed {
   phaseId: string;
   agentType: string;
@@ -386,11 +384,11 @@ async function main() {
         archReviewed: exec.archReviewed,
         archRevisionNeeded: exec.archRevisionNeeded,
         preVerifyDecision: exec.preVerifyDecision ?? undefined,
-        preVerifyFlags: exec.preVerifyFlags as any,
+        preVerifyFlags: exec.preVerifyFlags as unknown,
         codeAttempts: exec.codeAttempts,
         codeFirstAttemptSuccess: exec.codeFirstAttemptSuccess ?? undefined,
         postVerifyDecision: exec.postVerifyDecision ?? undefined,
-        postVerifyIssues: exec.postVerifyIssues as any,
+        postVerifyIssues: exec.postVerifyIssues as unknown,
         retryCount: exec.retryCount,
         debugSuccess: exec.debugSuccess ?? undefined,
         finalOutcome: exec.finalOutcome,
@@ -398,19 +396,19 @@ async function main() {
         committedAt: exec.committedAt ? new Date(exec.committedAt) : undefined,
         phases: {
           create: exec.phases.map((p) => {
-            const phaseData: Record<string, any> = {
+            const phaseData: Record<string, unknown> = {
               phaseId: p.phaseId,
               agentType: p.agentType,
               phaseOrder: p.phaseOrder,
             };
-            if (p.input) phaseData.input = p.input as any;
-            if (p.output) phaseData.output = p.output as any;
+            if (p.input) phaseData.input = p.input as unknown;
+            if (p.output) phaseData.output = p.output as unknown;
             if (p.decision !== undefined) phaseData.decision = p.decision;
             if (p.decisionReason !== undefined) phaseData.decisionReason = p.decisionReason;
             if (p.durationMs !== undefined) phaseData.durationMs = p.durationMs;
             if (p.modelUsed !== undefined) phaseData.modelUsed = p.modelUsed;
             if (p.transitionedTo !== undefined) phaseData.transitionedTo = p.transitionedTo;
-            return phaseData as any;
+            return phaseData as unknown;
           }),
         },
       },
@@ -506,7 +504,7 @@ async function main() {
         memoryId: seed.memoryId,
         agentType: seed.agentType,
         taskType: seed.taskType,
-        context: seed.context as any,
+        context: seed.context as unknown,
         decision: seed.decision,
         outcome: seed.outcome,
         success: seed.success,

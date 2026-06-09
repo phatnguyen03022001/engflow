@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { $Enums } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { KnowledgeGraphService } from '../../knowledge/services/knowledge-graph.service';
 import {
@@ -144,7 +145,7 @@ export class ContextManagerService {
   ): Promise<ContextFragment[]> {
     const memories = await this.prisma.agentMemory.findMany({
       where: {
-        agentType: agentType as any,
+        agentType: agentType as unknown as $Enums.AgentType,
         taskType,
         expiresAt: null,
       },

@@ -6,5 +6,10 @@
   "workspaces": [
     "backend",
     "frontend"
-  ]
+  ],
+  "jest": {
+    "projects": [
+      "<rootDir>/backend"
+    ]
+  }
 }

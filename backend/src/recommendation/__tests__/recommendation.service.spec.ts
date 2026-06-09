@@ -75,11 +75,8 @@ describe('RecommendationService', () => {
       decisionDomain: 'queue-system',
       querySummary: 'Should we use BullMQ?',
       recommendedOption: 'BullMQ',
-      weightedScore: 4.5,
-      scoreMargin: 1.2,
       justification: 'BullMQ is mature, Redis-based, and native Node.js.',
       confidenceLevel: 'HIGH',
-      confidenceScore: 82,
       options: [
         { label: 'A', description: 'BullMQ', score: 4.5 },
         { label: 'B', description: 'RabbitMQ', score: 3.3 },
@@ -114,6 +111,133 @@ describe('RecommendationService', () => {
       const result = await service.create(dtoWithoutOptions);
 
       expect(result).toEqual(mockRecommendation);
+    });
+
+    it('should ignore forged analytics fields from user input', async () => {
+      // Simulate an attacker injecting analytics fields into the request body.
+      // The runtime guard detects and discards these, and explicit field mapping
+      // ensures they can never reach the Prisma payload regardless of spread ordering.
+      const forgedDto = {
+        ...createDto,
+        confidenceScore: 100,
+        weightedScore: 5.0,
+        scoreMargin: 99,
+        ecs: 85,
+        sqs: 100,
+        cs: 100,
+      };
+
+      mockPrisma.recommendation.findUnique.mockResolvedValue(null);
+      mockPrisma.recommendation.create.mockResolvedValue(mockRecommendation);
+
+      await service.create(forgedDto);
+
+      // Verify the persisted data uses safe defaults, NOT the forged values.
+      // With explicit field mapping, analytics fields are sourced exclusively
+      // from the `analytics` parameter; the DTO is never spread into Prisma.
+      const createCallArgs = mockPrisma.recommendation.create.mock.calls[0][0];
+      expect(createCallArgs.data.confidenceScore).toBe(0);
+      expect(createCallArgs.data.weightedScore).toBe(0);
+      expect(createCallArgs.data.scoreMargin).toBe(0);
+      expect(createCallArgs.data.ecs).toBeNull();
+      expect(createCallArgs.data.sqs).toBeNull();
+      expect(createCallArgs.data.cs).toBeNull();
+    });
+
+    it('should accept analytics from trusted callers', async () => {
+      const analytics = {
+        confidenceScore: 85,
+        weightedScore: 4.2,
+        scoreMargin: 1.5,
+        ecs: 72,
+        sqs: 68,
+        cs: 90,
+      };
+
+      mockPrisma.recommendation.findUnique.mockResolvedValue(null);
+      mockPrisma.recommendation.create.mockResolvedValue(mockRecommendation);
+
+      await service.create(createDto, analytics);
+
+      const createCallArgs = mockPrisma.recommendation.create.mock.calls[0][0];
+      expect(createCallArgs.data.confidenceScore).toBe(85);
+      expect(createCallArgs.data.weightedScore).toBe(4.2);
+      expect(createCallArgs.data.scoreMargin).toBe(1.5);
+      expect(createCallArgs.data.ecs).toBe(72);
+      expect(createCallArgs.data.sqs).toBe(68);
+      expect(createCallArgs.data.cs).toBe(90);
+    });
+
+    it('should use defaults for partial analytics', async () => {
+      const partialAnalytics = {
+        confidenceScore: 70,
+        weightedScore: 3.5,
+        scoreMargin: 0.8,
+      };
+
+      mockPrisma.recommendation.findUnique.mockResolvedValue(null);
+      mockPrisma.recommendation.create.mockResolvedValue(mockRecommendation);
+
+      await service.create(createDto, partialAnalytics);
+
+      const createCallArgs = mockPrisma.recommendation.create.mock.calls[0][0];
+      expect(createCallArgs.data.confidenceScore).toBe(70);
+      expect(createCallArgs.data.weightedScore).toBe(3.5);
+      expect(createCallArgs.data.scoreMargin).toBe(0.8);
+      // Optional fields should default to null when not provided
+      expect(createCallArgs.data.ecs).toBeNull();
+      expect(createCallArgs.data.sqs).toBeNull();
+      expect(createCallArgs.data.cs).toBeNull();
+    });
+
+    it('should use defaults when analytics is undefined (not provided)', async () => {
+      mockPrisma.recommendation.findUnique.mockResolvedValue(null);
+      mockPrisma.recommendation.create.mockResolvedValue(mockRecommendation);
+
+      await service.create(createDto, undefined);
+
+      const createCallArgs = mockPrisma.recommendation.create.mock.calls[0][0];
+      // All six fields must use safe defaults when analytics is null
+      expect(createCallArgs.data.confidenceScore).toBe(0);
+      expect(createCallArgs.data.weightedScore).toBe(0);
+      expect(createCallArgs.data.scoreMargin).toBe(0);
+      expect(createCallArgs.data.ecs).toBeNull();
+      expect(createCallArgs.data.sqs).toBeNull();
+      expect(createCallArgs.data.cs).toBeNull();
+    });
+
+    it('should use safe defaults for minimal DTO without analytics', async () => {
+      // Minimal valid DTO: only required fields, no analytics.
+      const minimalDto = {
+        recId: 'REC-2026-min-002',
+        mode: 'ADVISOR',
+        decisionType: 'TC',
+        decisionDomain: 'database',
+        querySummary: 'Which DB?',
+        recommendedOption: 'PostgreSQL',
+        justification: 'Best fit.',
+        confidenceLevel: 'HIGH',
+      };
+
+      mockPrisma.recommendation.findUnique.mockResolvedValue(null);
+      mockPrisma.recommendation.create.mockResolvedValue(mockRecommendation);
+
+      await service.create(minimalDto);
+
+      const createCallArgs = mockPrisma.recommendation.create.mock.calls[0][0];
+      // All six analytics fields must have safe defaults.
+      // This is the only protection mechanism for REST callers.
+      expect(createCallArgs.data.confidenceScore).toBe(0);
+      expect(createCallArgs.data.weightedScore).toBe(0);
+      expect(createCallArgs.data.scoreMargin).toBe(0);
+      expect(createCallArgs.data.ecs).toBeNull();
+      expect(createCallArgs.data.sqs).toBeNull();
+      expect(createCallArgs.data.cs).toBeNull();
+
+      // Verify user fields are still correctly mapped
+      expect(createCallArgs.data.recId).toBe('REC-2026-min-002');
+      expect(createCallArgs.data.mode).toBe('ADVISOR');
+      expect(createCallArgs.data.recommendedOption).toBe('PostgreSQL');
     });
   });
 

@@ -33,9 +33,8 @@ describe('Recommendation Lifecycle (e2e)', () => {
     accuracySnapshots: [],
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockPrisma: any = {
-    $transaction: jest.fn((cb: (tx: any) => unknown) => cb(mockPrisma)),
+  const mockPrisma: Record<string, Record<string, jest.Mock> | jest.Mock> = {
+    $transaction: jest.fn((cb: (tx: unknown) => unknown) => cb(mockPrisma)),
     recommendation: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
@@ -104,8 +103,7 @@ describe('Recommendation Lifecycle (e2e)', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     // Re-establish $transaction pass-through (resetAllMocks clears implementations)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockPrisma.$transaction.mockImplementation((cb: (tx: any) => unknown) => cb(mockPrisma));
+    mockPrisma.$transaction.mockImplementation((cb: (tx: unknown) => unknown) => cb(mockPrisma));
     db.recommendations.clear();
     db.trustScores = [];
     db.checkpoints = [];

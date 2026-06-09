@@ -16,10 +16,10 @@ const mockFs = fs as jest.Mocked<typeof fs>;
  * both methods to avoid silent TypeError caught by the try/catch.
  */
 const dir = (name: string) =>
-  ({ name, isDirectory: () => true, isFile: () => false }) as any;
+  ({ name, isDirectory: () => true, isFile: () => false }) as unknown;
 
 const file = (name: string) =>
-  ({ name, isDirectory: () => false, isFile: () => true }) as any;
+  ({ name, isDirectory: () => false, isFile: () => true }) as unknown;
 
 function setupMockReaddir() {
   mockFs.readdir.mockReset();
@@ -29,7 +29,7 @@ function setupMockReaddir() {
 /** Queue sequential readdir return values. Falls back to [] when exhausted. */
 function queueReaddir(results: Array<ReturnType<typeof dir>[]>) {
   for (const r of results) {
-    mockFs.readdir.mockResolvedValueOnce(r);
+    (mockFs.readdir as jest.Mock).mockResolvedValueOnce(r);
   }
 }
 
@@ -46,7 +46,7 @@ function queueReadFile(contents: string[]) {
 
 describe('DriftDetectorService', () => {
   let service: DriftDetectorService;
-  let mockPrisma: any;
+  let mockPrisma: { driftEvent: Record<string, jest.Mock> };
 
   const now = new Date('2026-06-09T12:00:00Z');
 
@@ -72,7 +72,7 @@ describe('DriftDetectorService', () => {
       driftEvent: {
         findMany: jest.fn().mockResolvedValue([]),
         findFirst: jest.fn().mockResolvedValue(null),
-        create: jest.fn().mockImplementation(({ data }: any) =>
+        create: jest.fn().mockImplementation(({ data }: { data: Record<string, unknown> }) =>
           Promise.resolve(baseDriftEvent({
             detectorType: data.detectorType,
             severity: data.severity,
@@ -84,7 +84,7 @@ describe('DriftDetectorService', () => {
           })),
         ),
         count: jest.fn().mockResolvedValue(0),
-        update: jest.fn().mockImplementation(({ data }: any) =>
+        update: jest.fn().mockImplementation(({ data }: { data: Record<string, unknown> }) =>
           Promise.resolve(baseDriftEvent({
             ...data,
             resolvedAt: data.resolvedAt ?? null,
@@ -185,14 +185,14 @@ describe('DriftDetectorService', () => {
       mockFs.readdir.mockReset();
       mockFs.readdir.mockResolvedValue([]);
       // 1: structure src/
-      mockFs.readdir.mockResolvedValueOnce([] as any);
+      mockFs.readdir.mockResolvedValueOnce([]);
       // 2: policy rootDir → contains src/
-      mockFs.readdir.mockResolvedValueOnce([dir('src')]);
+      (mockFs.readdir as jest.Mock).mockResolvedValueOnce([dir('src')]);
       // 3: policy walk src/ → contains bad-file.ts
-      mockFs.readdir.mockResolvedValueOnce([file('bad-file.ts')]);
+      (mockFs.readdir as jest.Mock).mockResolvedValueOnce([file('bad-file.ts')]);
 
       mockFs.readFile.mockReset();
-      mockFs.readFile.mockImplementation((filePath: any) => {
+      mockFs.readFile.mockImplementation((filePath: unknown) => {
         if (String(filePath).includes('architecture.md')) {
           return Promise.resolve('### Module Structure\nsrc/\n');
         }
@@ -210,12 +210,12 @@ describe('DriftDetectorService', () => {
     it('should detect policy drift for any types', async () => {
       mockFs.readdir.mockReset();
       mockFs.readdir.mockResolvedValue([]);
-      mockFs.readdir.mockResolvedValueOnce([] as any);
-      mockFs.readdir.mockResolvedValueOnce([dir('src')]);
-      mockFs.readdir.mockResolvedValueOnce([file('has-any.ts')]);
+      mockFs.readdir.mockResolvedValueOnce([]);
+      (mockFs.readdir as jest.Mock).mockResolvedValueOnce([dir('src')]);
+      (mockFs.readdir as jest.Mock).mockResolvedValueOnce([file('has-any.ts')]);
 
       mockFs.readFile.mockReset();
-      mockFs.readFile.mockImplementation((filePath: any) => {
+      mockFs.readFile.mockImplementation((filePath: unknown) => {
         if (String(filePath).includes('architecture.md')) {
           return Promise.resolve('### Module Structure\nsrc/\n');
         }
@@ -230,12 +230,12 @@ describe('DriftDetectorService', () => {
     it('should detect policy drift for console.log usage', async () => {
       mockFs.readdir.mockReset();
       mockFs.readdir.mockResolvedValue([]);
-      mockFs.readdir.mockResolvedValueOnce([] as any);
-      mockFs.readdir.mockResolvedValueOnce([dir('src')]);
-      mockFs.readdir.mockResolvedValueOnce([file('has-console.ts')]);
+      mockFs.readdir.mockResolvedValueOnce([]);
+      (mockFs.readdir as jest.Mock).mockResolvedValueOnce([dir('src')]);
+      (mockFs.readdir as jest.Mock).mockResolvedValueOnce([file('has-console.ts')]);
 
       mockFs.readFile.mockReset();
-      mockFs.readFile.mockImplementation((filePath: any) => {
+      mockFs.readFile.mockImplementation((filePath: unknown) => {
         if (String(filePath).includes('architecture.md')) {
           return Promise.resolve('### Module Structure\nsrc/\n');
         }

@@ -17,7 +17,7 @@ jest.mock('fs', () => ({
 
 describe('KnowledgeSyncService', () => {
   let service: KnowledgeSyncService;
-  let prisma: any;
+  let prisma: typeof mockPrisma;
 
   const mockPrisma = {
     knowledgeNode: {

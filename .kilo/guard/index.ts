@@ -20,7 +20,7 @@ import { getContentStripper } from '../context/content-stripper';
 // ─── Transition Validation Matrix ──────────────────────────────────────
 
 /**
- * 14 allowed transitions per execution.contract.md §2.2.
+ * 17 allowed transitions per execution.contract.md §2.2.
  */
 const ALLOWED_TRANSITIONS: AllowedTransition[] = [
   { from: 'REQUEST', to: 'router', condition: 'Always' },
@@ -36,7 +36,10 @@ const ALLOWED_TRANSITIONS: AllowedTransition[] = [
   { from: 'code', to: 'post_verify', condition: 'Implementation complete' },
   { from: 'post_verify', to: 'COMMIT', condition: 'PASS or FLAG' },
   { from: 'post_verify', to: 'code', condition: 'FAIL (max 1 retry)' },
+  { from: 'post_verify', to: 'debug', condition: 'FAIL after CODE retry exhausted' },
   { from: 'post_verify', to: 'architect', condition: 'BLOCK' },
+  { from: 'debug', to: 'post_verify', condition: 'Fix applied, re-verify' },
+  { from: 'debug', to: 'architect', condition: 'BLOCK (cannot fix)' },
 ];
 
 /**
@@ -48,7 +51,7 @@ for (const t of ALLOWED_TRANSITIONS) {
 }
 
 /**
- * 6 forbidden transitions per execution.contract.md §2.3.
+ * 9 forbidden transitions per execution.contract.md §2.3.
  * Uses `${from}|${to}` keys. '*' wildcard matches any 'from' agent.
  */
 const FORBIDDEN_TRANSITIONS = new Set<string>([
@@ -58,11 +61,15 @@ const FORBIDDEN_TRANSITIONS = new Set<string>([
   'router|router',    // ROUTER → ROUTER no re-routing
   'plan|plan',        // PLAN → PLAN no re-plan loop
   'code|code',        // CODE → CODE no self-loop (except retry from POST_VERIFY)
+  'debug|plan',       // DEBUG → PLAN no re-planning after execution
+  'debug|code',       // DEBUG → CODE never delegates back to CODE
+  'debug|pre_verify', // DEBUG → PRE_VERIFY only PostVerify gates debug output
 ]);
 
 // ─── Retry Limits ──────────────────────────────────────────────────────
 
 const MAX_CODE_RETRY = 1;
+const MAX_DEBUG_RETRY = 1;
 const MAX_ARCH_PLAN_REVISION = 1;
 
 // ─── File Paths ────────────────────────────────────────────────────────
@@ -73,7 +80,7 @@ const AUDIT_LOG = path.resolve(GUARD_DIR, 'audit.log');
 
 // ─── Defaults ──────────────────────────────────────────────────────────
 
-const DEFAULT_RETRY: RetryCount = { code: 0, arch_plan_revision: 0 };
+const DEFAULT_RETRY: RetryCount = { code: 0, debug: 0, arch_plan_revision: 0 };
 
 function createDefaultLock(): ExecutionLock {
   return {
@@ -177,12 +184,15 @@ const PHASE_MAP: Record<string, ExecutionPhase> = {
   'pre_verify|architect': 'ARCH_REVIEWING',
   'code|post_verify': 'POST_VERIFYING',
   'post_verify|code': 'EXECUTING',
+  'post_verify|debug': 'EXECUTING',
   'post_verify|architect': 'ARCH_REVIEWING',
   'post_verify|COMMIT': 'COMMITTED',
+  'debug|post_verify': 'POST_VERIFYING',
+  'debug|architect': 'ARCH_REVIEWING',
 };
 
 const VALID_AGENTS = new Set<string>([
-  'router', 'plan', 'architect', 'code', 'pre_verify', 'post_verify',
+  'router', 'plan', 'architect', 'code', 'debug', 'pre_verify', 'post_verify',
 ]);
 
 function isAgent(value: string): value is NonNullAgent {
@@ -270,6 +280,16 @@ export class GuardService implements IGuardService {
         return {
           allowed: false,
           reason: `CODE retry limit exceeded (max ${MAX_CODE_RETRY}, current: ${this.state.retry_count.code})`,
+          retry_count: { ...this.state.retry_count },
+        };
+      }
+    }
+
+    if (from === 'debug' && to === 'post_verify') {
+      if (this.state.retry_count.debug >= MAX_DEBUG_RETRY) {
+        return {
+          allowed: false,
+          reason: `DEBUG retry limit exceeded (max ${MAX_DEBUG_RETRY}, current: ${this.state.retry_count.debug})`,
           retry_count: { ...this.state.retry_count },
         };
       }
@@ -379,7 +399,7 @@ export class GuardService implements IGuardService {
       this.state.state = 'VERIFYING';
     } else if (this.state.state === 'LOCKED' || this.state.state === 'PLANNING') {
       // Execution and verification states during locked phase
-      if (to === 'code' || to === 'post_verify') {
+      if (to === 'code' || to === 'debug' || to === 'post_verify') {
         this.state.state = 'EXECUTING';
       } else if (to === 'pre_verify' || from === 'pre_verify' || from === 'post_verify') {
         this.state.state = 'VERIFYING';
@@ -391,6 +411,9 @@ export class GuardService implements IGuardService {
     // 5. Retry counting
     if (from === 'post_verify' && to === 'code') {
       this.state.retry_count.code += 1;
+    }
+    if (from === 'debug' && to === 'post_verify') {
+      this.state.retry_count.debug += 1;
     }
     if (from === 'architect' && to === 'plan') {
       this.state.retry_count.arch_plan_revision += 1;
@@ -512,7 +535,7 @@ export class GuardService implements IGuardService {
    * - Default → 'read' (assessment, review, verification)
    */
   private inferAction(from: string, _to: string): 'read' | 'modify' | 'create' | 'delete' {
-    if (from === 'code') return 'modify';
+    if (from === 'code' || from === 'debug') return 'modify';
     return 'read';
   }
 
@@ -545,7 +568,12 @@ export class GuardService implements IGuardService {
     if (from === 'post_verify') {
       if (to === 'COMMIT') return `Post-verification passed, committing${condSuffix}`;
       if (to === 'code') return `Post-verification failed, retrying code${condSuffix}`;
+      if (to === 'debug') return `Post-verification failed after CODE retry, escalating to debug${condSuffix}`;
       return `Post-verification blocked, escalated to architect${condSuffix}`;
+    }
+    if (from === 'debug') {
+      if (to === 'post_verify') return `Applied debug fix, routed to re-verify${condSuffix}`;
+      return `Debug cannot fix, escalated to architect${condSuffix}`;
     }
     return `Transitioned from ${from} to ${to}${condSuffix}`;
   }

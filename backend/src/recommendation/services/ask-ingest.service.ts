@@ -3,6 +3,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RecommendationService } from './recommendation.service';
 import { CreateRecommendationDto } from '../dto/create-recommendation.dto';
+import { RecommendationAnalytics } from '../interfaces/recommendation-analytics.interface';
 
 /**
  * Patterns for parsing Ask agent's structured recommendation records.
@@ -65,9 +66,13 @@ export class AskIngestService {
    * Convert parsed fields to a CreateRecommendationDto.
    * This is a simplified conversion — full parsing requires the
    * complete Advisory Report output.
+   *
+   * Analytics/scoring fields (confidenceScore, weightedScore, scoreMargin,
+   * ecs, sqs, cs) are handled separately via buildAnalytics() and are NOT
+   * included in the DTO.
    */
   fieldsToDto(fields: Record<string, string>): CreateRecommendationDto | null {
-    // Minimum required fields
+    // Minimum required fields (analytics/scoring fields excluded — handled separately)
     const required = [
       'rec_id',
       'mode',
@@ -76,7 +81,6 @@ export class AskIngestService {
       'query_summary',
       'recommended_option',
       'confidence_level',
-      'confidence_score',
     ];
 
     for (const field of required) {
@@ -84,12 +88,6 @@ export class AskIngestService {
         this.logger.warn(`Missing required field: ${field}`);
         return null;
       }
-    }
-
-    const confidenceScore = parseInt(fields['confidence_score'], 10);
-    if (isNaN(confidenceScore)) {
-      this.logger.warn(`Invalid confidence_score: ${fields['confidence_score']}`);
-      return null;
     }
 
     return {
@@ -102,14 +100,8 @@ export class AskIngestService {
       constraints: fields['constraints']?.split(',').map((s) => s.trim()) ?? [],
       sourcesConsulted: [],
       recommendedOption: fields['recommended_option'],
-      weightedScore: parseFloat(fields['weighted_score'] ?? '0') || 3.0,
-      scoreMargin: parseFloat(fields['score_margin'] ?? '0') || 0,
       justification: fields['justification'] ?? '',
       confidenceLevel: fields['confidence_level'],
-      confidenceScore,
-      ecs: fields['ecs'] ? parseFloat(fields['ecs']) : undefined,
-      sqs: fields['sqs'] ? parseFloat(fields['sqs']) : undefined,
-      cs: fields['cs'] ? parseFloat(fields['cs']) : undefined,
       unknownsCount: fields['unknowns_count']
         ? parseInt(fields['unknowns_count'], 10)
         : undefined,
@@ -123,6 +115,24 @@ export class AskIngestService {
       reasoningTrace: fields['reasoning_trace'],
       advisoryReportRef: fields['advisory_report_ref'],
       modelVersion: fields['model_version'],
+    };
+  }
+
+  /**
+   * Build analytics/scoring fields from parsed fields.
+   * These values are server-controlled and passed separately to the
+   * RecommendationService to prevent injection from untrusted input.
+   */
+  buildAnalytics(fields: Record<string, string>): RecommendationAnalytics {
+    const confidenceScore = parseInt(fields['confidence_score'], 10);
+
+    return {
+      confidenceScore: isNaN(confidenceScore) ? 0 : confidenceScore,
+      weightedScore: parseFloat(fields['weighted_score'] ?? '0') || 3.0,
+      scoreMargin: parseFloat(fields['score_margin'] ?? '0') || 0,
+      ecs: fields['ecs'] ? parseFloat(fields['ecs']) : undefined,
+      sqs: fields['sqs'] ? parseFloat(fields['sqs']) : undefined,
+      cs: fields['cs'] ? parseFloat(fields['cs']) : undefined,
     };
   }
 
@@ -141,7 +151,8 @@ export class AskIngestService {
       return { success: false, error: 'Failed to convert fields to DTO' };
     }
 
-    const recommendation = await this.recommendationService.create(dto);
+    const analytics = this.buildAnalytics(fields);
+    const recommendation = await this.recommendationService.create(dto, analytics);
     return { success: true, recommendation };
   }
 }

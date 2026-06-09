@@ -95,15 +95,6 @@ export class CreateRecommendationDto {
   @IsNotEmpty()
   recommendedOption: string;
 
-  @IsNumber()
-  @Min(0)
-  @Max(5)
-  weightedScore: number;
-
-  @IsNumber()
-  @Min(0)
-  scoreMargin: number;
-
   @IsString()
   @IsNotEmpty()
   justification: string;
@@ -113,29 +104,6 @@ export class CreateRecommendationDto {
   @IsNotEmpty()
   @IsEnum(ConfidenceLevel)
   confidenceLevel: string;
-
-  @IsInt()
-  @Min(0)
-  @Max(100)
-  confidenceScore: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(85)
-  ecs?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  sqs?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  cs?: number;
 
   @IsOptional()
   @IsInt()

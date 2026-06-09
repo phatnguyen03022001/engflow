@@ -89,6 +89,7 @@ describe('GuardService', () => {
       expect(state.hop_count).toBe(0);
       expect(state.locked).toBe(false);
       expect(state.retry_count.code).toBe(0);
+      expect(state.retry_count.debug).toBe(0);
       expect(state.retry_count.arch_plan_revision).toBe(0);
     });
 
@@ -378,6 +379,7 @@ describe('GuardService', () => {
 
       guard.reset();
       expect(guard.getState().retry_count.code).toBe(0);
+      expect(guard.getState().retry_count.debug).toBe(0);
       expect(guard.getState().retry_count.arch_plan_revision).toBe(0);
     });
   });
@@ -614,6 +616,150 @@ describe('GuardService', () => {
 
       assertAllowed(guard, 'post_verify', 'COMMIT', 'FLAG');
       expect(guard.getState().state).toBe('COMMITTED');
+    });
+  });
+
+  // ─── 3 DEBUG Transitions (§2.2) ───────────────────────────────────────
+
+  describe('DEBUG transition validation', () => {
+    it('1. post_verify → debug (FAIL after CODE retry exhausted)', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan');
+      guard.transition('plan', 'pre_verify');
+      guard.transition('pre_verify', 'code');
+      guard.transition('code', 'post_verify');
+      assertAllowed(guard, 'post_verify', 'debug', 'FAIL after CODE retry exhausted');
+      expect(guard.getState().current_agent).toBe('debug');
+    });
+
+    it('2. debug → post_verify (Fix applied, re-verify)', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan');
+      guard.transition('plan', 'pre_verify');
+      guard.transition('pre_verify', 'code');
+      guard.transition('code', 'post_verify');
+      guard.transition('post_verify', 'debug', 'FAIL after CODE retry exhausted');
+      assertAllowed(guard, 'debug', 'post_verify', 'Fix applied, re-verify');
+      expect(guard.getState().current_agent).toBe('post_verify');
+    });
+
+    it('3. debug → architect (BLOCK (cannot fix))', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan');
+      guard.transition('plan', 'pre_verify');
+      guard.transition('pre_verify', 'code');
+      guard.transition('code', 'post_verify');
+      guard.transition('post_verify', 'debug', 'FAIL after CODE retry exhausted');
+      assertAllowed(guard, 'debug', 'architect', 'BLOCK (cannot fix)');
+      expect(guard.getState().current_agent).toBe('architect');
+    });
+  });
+
+  // ─── 3 DEBUG Forbidden Transitions (§2.3) ─────────────────────────────
+
+  describe('DEBUG forbidden transitions', () => {
+    beforeEach(() => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan');
+      guard.transition('plan', 'pre_verify');
+      guard.transition('pre_verify', 'code');
+      guard.transition('code', 'post_verify');
+      guard.transition('post_verify', 'debug', 'FAIL after CODE retry exhausted');
+    });
+
+    it('1. debug → plan — no re-planning after execution', () => {
+      assertDenied(guard, 'debug', 'plan');
+    });
+
+    it('2. debug → code — never delegates back to CODE', () => {
+      assertDenied(guard, 'debug', 'code');
+    });
+
+    it('3. debug → pre_verify — only POST_VERIFY gates debug output', () => {
+      assertDenied(guard, 'debug', 'pre_verify');
+    });
+  });
+
+  // ─── DEBUG Retry Limits ───────────────────────────────────────────────
+
+  describe('DEBUG retry limit', () => {
+    it('should allow DEBUG → POST_VERIFY once, then deny on second attempt', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan');
+      guard.transition('plan', 'pre_verify');
+      guard.transition('pre_verify', 'code');
+      guard.transition('code', 'post_verify');
+      guard.transition('post_verify', 'debug', 'FAIL after CODE retry exhausted');
+
+      // First debug → post_verify: allowed
+      assertAllowed(guard, 'debug', 'post_verify', 'Fix applied, re-verify');
+      expect(guard.getState().retry_count.debug).toBe(1);
+
+      // Second debug → post_verify: denied (max 1)
+      const result = guard.transition('debug', 'post_verify', 'Fix applied, re-verify');
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toContain('retry limit');
+    });
+
+    it('should track debug retry count independently of code retry count', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan');
+      guard.transition('plan', 'pre_verify');
+      guard.transition('pre_verify', 'code');
+      guard.transition('code', 'post_verify');
+
+      // CODE retry
+      guard.transition('post_verify', 'code', 'FAIL');
+      expect(guard.getState().retry_count.code).toBe(1);
+
+      // CODE → POST_VERIFY again, then FAIL → DEBUG
+      guard.transition('code', 'post_verify');
+      guard.transition('post_verify', 'debug', 'FAIL after CODE retry exhausted');
+
+      // DEBUG retry
+      guard.transition('debug', 'post_verify', 'Fix applied, re-verify');
+      expect(guard.getState().retry_count.debug).toBe(1);
+      expect(guard.getState().retry_count.code).toBe(1); // unchanged
+    });
+  });
+
+  // ─── Debug Integrated Happy Path ───────────────────────────────────────
+
+  describe('DEBUG integrated happy path: CODE → POST_VERIFY → CODE → POST_VERIFY → DEBUG → POST_VERIFY → COMMIT', () => {
+    it('should complete a full escalation flow through DEBUG', () => {
+      // Phase 1: Initial implementation
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan', 'LEVEL_3');
+      guard.transition('plan', 'pre_verify', 'No architecture issues');
+      guard.transition('pre_verify', 'code', 'PASS');
+      guard.transition('code', 'post_verify');
+      expect(guard.getState().phase).toBe('POST_VERIFYING');
+
+      // Phase 2: PostVerify FAIL → CODE retry
+      guard.transition('post_verify', 'code', 'FAIL');
+      expect(guard.getState().retry_count.code).toBe(1);
+      expect(guard.getState().current_agent).toBe('code');
+      expect(guard.getState().phase).toBe('EXECUTING');
+
+      // Phase 3: CODE retry → PostVerify FAIL again
+      guard.transition('code', 'post_verify');
+      expect(guard.getState().phase).toBe('POST_VERIFYING');
+
+      // Phase 4: PostVerify FAIL after CODE retry exhausted → DEBUG escalation
+      guard.transition('post_verify', 'debug', 'FAIL after CODE retry exhausted');
+      expect(guard.getState().current_agent).toBe('debug');
+      expect(guard.getState().phase).toBe('EXECUTING');
+
+      // Phase 5: DEBUG fix → PostVerify re-verify
+      guard.transition('debug', 'post_verify', 'Fix applied, re-verify');
+      expect(guard.getState().retry_count.debug).toBe(1);
+      expect(guard.getState().phase).toBe('POST_VERIFYING');
+
+      // Phase 6: PostVerify PASS → COMMIT
+      guard.transition('post_verify', 'COMMIT', 'PASS');
+      expect(guard.getState().state).toBe('COMMITTED');
+      expect(guard.getState().locked).toBe(false);
+      expect(guard.getState().hop_count).toBe(10);
     });
   });
 });

@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { mkdirSync } from 'fs';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -50,6 +51,8 @@ async function bootstrap() {
 
   // Graceful shutdown hooks
   app.enableShutdownHooks();
+
+  mkdirSync('./uploads/avatars', { recursive: true });
 
   const port = process.env.PORT || 3001;
   await app.listen(port);

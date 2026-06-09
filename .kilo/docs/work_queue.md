@@ -5,6 +5,76 @@
 ## Active
 
 ## Finished
+### ADR-017 — Shift Runtime Verification Execution to CODE Agent
+- **Status**: Completed
+- **Date**: 2026-06-10
+- **Delivered**:
+  - ADR-017 document (docs/decisions/0017-execution-shift-to-code.md)
+  - CODE prompt updated: Runtime Verification Delegation as final step before code → post_verify
+  - POST_VERIFY prompt updated: Raw Output Audit protocol scanning CODE's report for failure patterns
+  - code.rules.md — §9-10 added (verification as mandatory DoD item + runtime verification spec)
+  - post_verify.rules.md — §3.8 replaced with review-only contract, sandbox note updated
+  - docs/decisions.md — ADR Index updated with ADR-015/016/017
+- **Invariants**: I1-I4 all preserved (no permission, DAG, or schema changes)
+- **Build**: zero errors
+- **Tests**: 408/408 backend pass
+
+### Lint Remediation — Constitution §4 Enforcement
+- **Status**: Completed
+- **Date**: 2026-06-10
+- **Delivered**:
+  - Removed 3 ESLint errors (0 remaining)
+  - Replaced ~80+ `any` type annotations with `unknown`/proper types across ~30 files (evaluation/, memory/, knowledge/, recommendation/, model-registry/, user/, test/e2e/, prisma/)
+  - Enabled `@typescript-eslint/no-explicit-any: warn` in .eslintrc.js
+  - Fixed `require()` → `import` in analytics.service.spec.ts
+  - Fixed `let` → `const` in memory.service.ts:300
+- **npm run lint**: exit code 0 (0 errors, 0 no-explicit-any warnings, 38 pre-existing no-unused-vars)
+- **npm run build**: zero errors
+- **Tests**: 408/408 backend + 61/61 guard pass
+- **Changes**: ~30 files edited across 7 modules
+
+### ADR-016 — DEBUG Agent Activation
+- **Status**: Completed
+- **Date**: 2026-06-10
+- **Delivered**:
+  - ADR-016 document (docs/decisions/0016-debug-agent-activation.md)
+  - DEBUG agent activated in kilo.jsonc (disable removed, task: deny, diagnosis-first prompt)
+  - Execution Contract amended with 3 DEBUG transitions (execution.contract.md)
+  - Runtime Guard updated with full DEBUG support (types.ts, index.ts) — 9 new tests
+  - ADR-ASK-001 governance updated (catalog active, routing matrix, §3 Negative #2 removed)
+  - 2 new evaluation metrics in CodeEvaluatorService (debugToCodeEscalationRate, codeRetryAfterDebugSuccessRate)
+  - Root Jest config fix (package.json projects) — 28 pre-existing test failures resolved
+- **Build**: zero errors
+- **Tests**: 408/408 backend + 61/61 guard pass
+- **Changes**: 1 new file, 7 edited files, 0 schema changes
+
+### IDOR Audit & Remediation — Authorization Boundary Closure
+- **Status**: Completed
+- **Date**: 2026-06-09
+- **Fixes**:
+  - `GET /users/:id` — Added ownership check with admin bypass (Option C). Non-admin users can only access their own profile; admins can access any profile. Closes **HIGH** IDOR vulnerability.
+  - `GET /users` — Added `@Roles(UserRole.ADMIN)` guard. Only admin users can enumerate all users. Closes **MEDIUM** authorization gap.
+  - `UserController` — Added `RolesGuard` at class level following KnowledgeController reference pattern. The guard is a no-op on routes without `@Roles()` so existing self-service routes (`/users/me`, `/users/me/avatar`) are unaffected.
+  - `UserService.findById` — Added JSDoc documenting that callers must verify authorization (defense-in-depth).
+- **Tests**: Created `user.controller.spec.ts` with 8 tests covering: self-access, cross-user forbidden, admin bypass, user listing, and profile update.
+- **Regression**: No existing E2E tests reference user endpoints. Zero frontend dependencies on `GET /users/:id` or `GET /users` — frontend obtains user data via login/register JWT responses.
+- **Build**: zero errors
+- **Tests**: 400/400 pass (27 suites)
+### F1 Remediation — Mass Assignment Hardening
+- **Status**: CLOSED
+- **Date**: 2026-06-09
+- **Finding**: RecommendationService.create() accepted analytics fields (confidenceScore, weightedScore, scoreMargin, ecs, sqs, cs) from user DTO via spread-ordering override pattern — fragile under refactoring.
+- **Fixes**:
+  - Eliminated `...data` rest spread entirely — replaced with explicit field mapping of every user-controlled field in Prisma create payload
+  - Server-controlled analytics fields sourced exclusively from `analytics` parameter (trusted callers) or safe defaults (REST callers)
+  - Added `FORBIDDEN_ANALYTICS_KEYS` runtime guard with Logger.warn — detects and discards injected analytics fields before they reach Prisma
+  - Added Logger to RecommendationService for security event logging
+- **Tests Added**: 3 new — analytics undefined, minimal DTO defaults, forged-key survival
+- **Evidence**: 24/24 tests pass (was 21), 408/408 all suites pass, build zero errors
+- **Post-Verify**: All 3 FLAG concerns resolved (spread-order fragility, injection path, schema mapping verified)
+
+
+## Finished
 ### TASK-033 — Layer 9 Stabilization & Smoke Test
 - **Status**: Completed
 - **Date**: 2026-06-09

@@ -1,7 +1,7 @@
 /* @lifecycle ACTIVE — Canonical memory service for all agent types (TASK-029) */
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, $Enums } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateMemoryDto } from '../dto/create-memory.dto';
 import {
@@ -33,7 +33,7 @@ export class MemoryService {
       const existing = await this.prisma.agentMemory.findFirst({
         where: {
           sourceExecutionId: dto.sourceExecutionId,
-          agentType: dto.agentType as any,
+          agentType: dto.agentType as unknown as $Enums.AgentType,
         },
       });
 
@@ -41,7 +41,7 @@ export class MemoryService {
         return this.prisma.agentMemory.update({
           where: { id: existing.id },
           data: {
-            outcome: dto.outcome as any,
+            outcome: dto.outcome as unknown as $Enums.MemoryOutcome,
             success: dto.success,
             confidence: dto.confidence ?? undefined,
             decision: dto.decision ?? null,
@@ -57,9 +57,9 @@ export class MemoryService {
     return this.prisma.agentMemory.create({
       data: {
         memoryId,
-        agentType: dto.agentType as any,
+        agentType: dto.agentType as unknown as $Enums.AgentType,
         taskType: dto.taskType,
-        outcome: dto.outcome as any,
+        outcome: dto.outcome as unknown as $Enums.MemoryOutcome,
         success: dto.success,
         confidence: dto.confidence ?? undefined,
         decision: dto.decision ?? null,
@@ -143,10 +143,10 @@ export class MemoryService {
         agentOutcome = MemoryOutcome.FAILURE;
       }
 
-      const memory = await this.prisma.agentMemory.create({
+      const memory =       await this.prisma.agentMemory.create({
         data: {
           memoryId: this.generateMemoryId(),
-          agentType: agentType as any,
+          agentType: agentType as unknown as $Enums.AgentType,
           taskType: execution.routerRoute ?? 'UNKNOWN',
           context: {
             requestSummary: execution.requestSummary,
@@ -154,7 +154,7 @@ export class MemoryService {
             routerConfidence: execution.routerConfidence,
           } as Prisma.InputJsonValue,
           decision: lastPhase?.decision ?? null,
-          outcome: agentOutcome as any,
+          outcome: agentOutcome as unknown as $Enums.MemoryOutcome,
           success: agentSuccess,
           lessonsLearned: lessons,
           sourceExecutionId: execution.executionId,
@@ -188,7 +188,7 @@ export class MemoryService {
     const where: Prisma.AgentMemoryWhereInput = {};
 
     if (params.agentType) {
-      where.agentType = params.agentType as any;
+      where.agentType = params.agentType as unknown as $Enums.AgentType;
     }
     if (params.taskType) {
       where.taskType = params.taskType;
@@ -214,7 +214,7 @@ export class MemoryService {
       }
     }
 
-    const scored: MemoryQueryResult[] = memories.map((memory: any) => {
+    const scored: MemoryQueryResult[] = memories.map((memory) => {
       const memoryContext = (memory.context as Record<string, string>) ?? {};
 
       let similarity = MEMORY_SCORING_WEIGHTS.baseline;
@@ -276,7 +276,7 @@ export class MemoryService {
     const where: Prisma.AgentMemoryWhereInput = {};
 
     if (agentType) {
-      where.agentType = agentType as any;
+      where.agentType = agentType as unknown as $Enums.AgentType;
     }
     if (taskTypeFilter) {
       where.taskType = taskTypeFilter;
@@ -297,7 +297,7 @@ export class MemoryService {
       groups.set(key, existing);
     }
 
-    let patterns: PatternSummary[] = Array.from(groups.entries()).map(
+    const patterns: PatternSummary[] = Array.from(groups.entries()).map(
       ([key, data]) => {
         const [taskType, domainRaw] = key.split('::');
         const domain = domainRaw === '__null__' ? null : domainRaw;
@@ -330,7 +330,7 @@ export class MemoryService {
   async getSummary(agentType?: AgentType): Promise<MemorySummary> {
     const where: Prisma.AgentMemoryWhereInput = {};
     if (agentType) {
-      where.agentType = agentType as any;
+      where.agentType = agentType as unknown as $Enums.AgentType;
     }
 
     const totalMemories = await this.prisma.agentMemory.count({ where });
@@ -431,8 +431,19 @@ export class MemoryService {
 
   private deriveLessons(
     agentType: string,
-    execution: any,
-    phases: any[],
+    execution: {
+      requestSummary: string;
+      routerRoute: string;
+      preVerifyDecision: string | null;
+      preVerifyFlags: unknown;
+      retryCount: number;
+      codeAttempts: number;
+      postVerifyDecision: string | null;
+      postVerifyIssues: unknown;
+      archRevisionNeeded: boolean;
+      finalOutcome: string;
+    },
+    phases: { decision: string | null }[],
   ): string[] {
     const lessons: string[] = [];
 

@@ -9,9 +9,15 @@ describe('TrustScoreService', () => {
   let service: TrustScoreService;
   let prisma: typeof mockPrisma;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockPrisma: any = {
-    $transaction: jest.fn((cb: (tx: any) => unknown) => cb(mockPrisma)),
+  interface MockPrisma {
+    $transaction: jest.Mock;
+    recommendation: { findMany: jest.Mock };
+    agentExecution: { findMany: jest.Mock; findUnique: jest.Mock };
+    trustScore: { findFirst: jest.Mock; create: jest.Mock; update: jest.Mock; findMany: jest.Mock };
+  }
+
+  const mockPrisma: MockPrisma = {
+    $transaction: jest.fn((cb: (tx: MockPrisma) => unknown) => cb(mockPrisma)),
     recommendation: {
       findMany: jest.fn(),
     },

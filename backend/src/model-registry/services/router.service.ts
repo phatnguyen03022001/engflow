@@ -1,8 +1,9 @@
 /* @lifecycle ACTIVE — Model route resolution service (ADR-010) */
 
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
-import { ResolvedModel } from '../interfaces/model-registry.interface';
+import { ResolvedModel, ModelTier } from '../interfaces/model-registry.interface';
 
 @Injectable()
 export class RouterService {
@@ -51,7 +52,7 @@ export class RouterService {
       modelId: route.primaryModel.modelId,
       displayName: route.primaryModel.displayName,
       providerId: route.primaryModel.providerId,
-      tier: route.primaryModel.tier as any,
+      tier: route.primaryModel.tier as unknown as ModelTier,
     };
   }
 
@@ -59,7 +60,7 @@ export class RouterService {
    * List all active routes with optional filters.
    */
   async getRoutes(filters?: { agentType?: string; taskType?: string }) {
-    const where: any = { isActive: true };
+    const where: Prisma.ModelRouteWhereInput = { isActive: true };
 
     if (filters?.agentType) {
       where.agentType = filters.agentType;

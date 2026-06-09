@@ -120,7 +120,7 @@ key_only:
   });
 
   describe('fieldsToDto', () => {
-    it('should convert valid fields to CreateRecommendationDto', () => {
+    it('should convert valid fields to CreateRecommendationDto (without analytics)', () => {
       const fields: Record<string, string> = {
         rec_id: 'REC-001',
         mode: 'ADVISOR',
@@ -137,15 +137,16 @@ key_only:
       };
 
       // Access private method via type cast
-      const dto = (service as any).fieldsToDto(fields);
+      const dto = (service as unknown as { fieldsToDto: (fields: Record<string, string>) => Record<string, unknown> | null }).fieldsToDto(fields);
 
       expect(dto).not.toBeNull();
-      expect(dto.recId).toBe('REC-001');
-      expect(dto.mode).toBe('ADVISOR');
-      expect(dto.decisionType).toBe('TC');
-      expect(dto.confidenceScore).toBe(85);
-      expect(dto.weightedScore).toBe(4.2);
-      expect(dto.scoreMargin).toBe(0.5);
+      expect(dto!.recId).toBe('REC-001');
+      expect(dto!.mode).toBe('ADVISOR');
+      expect(dto!.decisionType).toBe('TC');
+      // Analytics fields are NOT in the DTO
+      expect(dto!.confidenceScore).toBeUndefined();
+      expect(dto!.weightedScore).toBeUndefined();
+      expect(dto!.scoreMargin).toBeUndefined();
     });
 
     it('should return null when required field is missing', () => {
@@ -157,27 +158,9 @@ key_only:
         query_summary: 'Which DB?',
         recommended_option: 'PostgreSQL',
         confidence_level: 'HIGH',
-        confidence_score: '85',
       };
 
-      const dto = (service as any).fieldsToDto(fields);
-
-      expect(dto).toBeNull();
-    });
-
-    it('should return null when confidence_score is not a number', () => {
-      const fields: Record<string, string> = {
-        rec_id: 'REC-001',
-        mode: 'ADVISOR',
-        decision_type: 'TC',
-        decision_domain: 'database',
-        query_summary: 'Which DB?',
-        recommended_option: 'PostgreSQL',
-        confidence_level: 'HIGH',
-        confidence_score: 'not-a-number',
-      };
-
-      const dto = (service as any).fieldsToDto(fields);
+      const dto = (service as unknown as { fieldsToDto: (fields: Record<string, string>) => Record<string, unknown> | null }).fieldsToDto(fields);
 
       expect(dto).toBeNull();
     });
@@ -191,17 +174,14 @@ key_only:
         query_summary: 'Which DB?',
         recommended_option: 'PostgreSQL',
         confidence_level: 'HIGH',
-        confidence_score: '85',
       };
 
-      const dto = (service as any).fieldsToDto(fields);
+      const dto = (service as unknown as { fieldsToDto: (fields: Record<string, string>) => Record<string, unknown> | null }).fieldsToDto(fields);
 
       expect(dto).not.toBeNull();
-      expect(dto.weightedScore).toBe(3.0); // default
-      expect(dto.scoreMargin).toBe(0); // default
-      expect(dto.constraints).toEqual([]); // default
-      expect(dto.sourcesConsulted).toEqual([]); // default
-      expect(dto.projectId).toBeUndefined();
+      expect(dto!.constraints).toEqual([]); // default
+      expect(dto!.sourcesConsulted).toEqual([]); // default
+      expect(dto!.projectId).toBeUndefined();
     });
 
     it('should parse comma-separated constraints', () => {
@@ -213,17 +193,16 @@ key_only:
         query_summary: 'Which DB?',
         recommended_option: 'PostgreSQL',
         confidence_level: 'HIGH',
-        confidence_score: '85',
         constraints: 'cost, performance, scalability',
       };
 
-      const dto = (service as any).fieldsToDto(fields);
+      const dto = (service as unknown as { fieldsToDto: (fields: Record<string, string>) => Record<string, unknown> | null }).fieldsToDto(fields);
 
       expect(dto).not.toBeNull();
-      expect(dto.constraints).toEqual(['cost', 'performance', 'scalability']);
+      expect((dto as Record<string, unknown>).constraints).toEqual(['cost', 'performance', 'scalability']);
     });
 
-    it('should handle ECS, SQS, CS optional numeric fields', () => {
+    it('should handle unknowns optional numeric fields', () => {
       const fields: Record<string, string> = {
         rec_id: 'REC-001',
         mode: 'ADVISOR',
@@ -232,22 +211,73 @@ key_only:
         query_summary: 'Which DB?',
         recommended_option: 'PostgreSQL',
         confidence_level: 'HIGH',
-        confidence_score: '85',
-        ecs: '70',
-        sqs: '65',
-        cs: '80',
         unknowns_count: '3',
         unknowns_critical: '1',
       };
 
-      const dto = (service as any).fieldsToDto(fields);
+      const dto = (service as unknown as { fieldsToDto: (fields: Record<string, string>) => Record<string, unknown> | null }).fieldsToDto(fields);
 
       expect(dto).not.toBeNull();
-      expect(dto.ecs).toBe(70);
-      expect(dto.sqs).toBe(65);
-      expect(dto.cs).toBe(80);
-      expect(dto.unknownsCount).toBe(3);
-      expect(dto.unknownsCritical).toBe(1);
+      expect((dto as Record<string, unknown>).unknownsCount).toBe(3);
+      expect((dto as Record<string, unknown>).unknownsCritical).toBe(1);
+    });
+  });
+
+  describe('buildAnalytics', () => {
+    it('should build analytics from parsed fields', () => {
+      const fields: Record<string, string> = {
+        confidence_score: '85',
+        weighted_score: '4.2',
+        score_margin: '0.5',
+        ecs: '70',
+        sqs: '65',
+        cs: '80',
+      };
+
+      const analytics = service.buildAnalytics(fields);
+
+      expect(analytics.confidenceScore).toBe(85);
+      expect(analytics.weightedScore).toBe(4.2);
+      expect(analytics.scoreMargin).toBe(0.5);
+      expect(analytics.ecs).toBe(70);
+      expect(analytics.sqs).toBe(65);
+      expect(analytics.cs).toBe(80);
+    });
+
+    it('should use defaults when optional analytics fields are missing', () => {
+      const fields: Record<string, string> = {
+        confidence_score: '85',
+      };
+
+      const analytics = service.buildAnalytics(fields);
+
+      expect(analytics.confidenceScore).toBe(85);
+      expect(analytics.weightedScore).toBe(3.0); // default
+      expect(analytics.scoreMargin).toBe(0);     // default
+      expect(analytics.ecs).toBeUndefined();
+      expect(analytics.sqs).toBeUndefined();
+      expect(analytics.cs).toBeUndefined();
+    });
+
+    it('should default confidenceScore to 0 when invalid', () => {
+      const fields: Record<string, string> = {
+        confidence_score: 'not-a-number',
+      };
+
+      const analytics = service.buildAnalytics(fields);
+
+      expect(analytics.confidenceScore).toBe(0);
+    });
+
+    it('should handle missing fields gracefully', () => {
+      const analytics = service.buildAnalytics({});
+
+      expect(analytics.confidenceScore).toBe(0);
+      expect(analytics.weightedScore).toBe(3.0);
+      expect(analytics.scoreMargin).toBe(0);
+      expect(analytics.ecs).toBeUndefined();
+      expect(analytics.sqs).toBeUndefined();
+      expect(analytics.cs).toBeUndefined();
     });
   });
 
@@ -266,6 +296,11 @@ key_only:
       expect(result.success).toBe(true);
       expect(result.recommendation).toEqual(mockCreatedRecommendation);
       expect(mockRecommendationService.create).toHaveBeenCalledTimes(1);
+      // Verify analytics is passed as second argument
+      const [dto, analytics] = mockRecommendationService.create.mock.calls[0];
+      expect(analytics).toBeDefined();
+      expect(analytics.confidenceScore).toBe(82);
+      expect(analytics.weightedScore).toBe(4.5);
     });
 
     it('should return error when no valid record found', async () => {

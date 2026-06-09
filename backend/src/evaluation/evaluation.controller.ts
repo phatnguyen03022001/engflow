@@ -20,6 +20,7 @@ import { CreatePhaseDto } from './dto/create-phase.dto';
 import { QueryMetricsDto } from './dto/query-metrics.dto';
 import { QueryExecutionsDto } from './dto/query-executions.dto';
 import { QueryDriftEventsDto } from './dto/query-drift-events.dto';
+import { DetectorType, Severity } from './interfaces/drift-detector.interface';
 import { QueryAnalyticsDto } from './dto/query-analytics.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -115,8 +116,8 @@ export class EvaluationController {
   @ApiOperation({ summary: 'Query drift events with optional filters' })
   queryDriftEvents(@Query() query: QueryDriftEventsDto) {
     return this.driftDetectorService.queryEvents({
-      detectorType: query.detectorType as any,
-      severity: query.severity as any,
+      detectorType: query.detectorType as DetectorType,
+      severity: query.severity as Severity,
       isResolved: query.isResolved,
       skip: query.skip,
       take: query.take,

@@ -5,6 +5,9 @@ import { NodeType, EdgeType, UserRole } from '@prisma/client';
 import { KnowledgeController } from '../knowledge.controller';
 import { KnowledgeGraphService } from '../services/knowledge-graph.service';
 import { KnowledgeSyncService } from '../services/knowledge-sync.service';
+import { CreateNodeDto } from '../dto/create-node.dto';
+import { QueryNodesDto, QueryEdgesDto } from '../dto/query-graph.dto';
+import { CreateEdgeDto } from '../dto/create-edge.dto';
 
 describe('KnowledgeController', () => {
   let controller: KnowledgeController;
@@ -75,7 +78,7 @@ describe('KnowledgeController', () => {
       };
       mockGraphService.createNode.mockResolvedValue(mockNode);
 
-      const result = await controller.createNode(dto as any);
+      const result = await controller.createNode(dto as unknown as CreateNodeDto);
 
       expect(graphService.createNode).toHaveBeenCalledWith(dto);
       expect(result).toEqual(mockNode);
@@ -88,7 +91,7 @@ describe('KnowledgeController', () => {
       const expected = { items: [mockNode], total: 1 };
       mockGraphService.findNodes.mockResolvedValue(expected);
 
-      const result = await controller.findNodes(query as any);
+      const result = await controller.findNodes(query as unknown as QueryNodesDto);
 
       expect(graphService.findNodes).toHaveBeenCalledWith(query);
       expect(result).toEqual(expected);
@@ -97,7 +100,7 @@ describe('KnowledgeController', () => {
     it('should call findNodes with empty query', async () => {
       mockGraphService.findNodes.mockResolvedValue({ items: [], total: 0 });
 
-      const result = await controller.findNodes({} as any);
+      const result = await controller.findNodes({} as unknown as QueryNodesDto);
 
       expect(graphService.findNodes).toHaveBeenCalledWith({});
       expect(result.total).toBe(0);
@@ -167,7 +170,7 @@ describe('KnowledgeController', () => {
       };
       mockGraphService.createEdge.mockResolvedValue(mockEdge);
 
-      const result = await controller.createEdge(dto as any);
+      const result = await controller.createEdge(dto as unknown as CreateEdgeDto);
 
       expect(graphService.createEdge).toHaveBeenCalledWith(dto);
       expect(result).toEqual(mockEdge);
@@ -180,7 +183,7 @@ describe('KnowledgeController', () => {
       const expected = { items: [], total: 0 };
       mockGraphService.findEdges.mockResolvedValue(expected);
 
-      const result = await controller.findEdges(query as any);
+      const result = await controller.findEdges(query as unknown as QueryEdgesDto);
 
       expect(graphService.findEdges).toHaveBeenCalledWith(query);
       expect(result).toEqual(expected);

@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DecisionMemoryService } from '../services/decision-memory.service';
 import { MemoryService } from '../../memory/services/memory.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { AgentMemoryEntry } from '../../memory/interfaces/agent-memory.interface';
 
 describe('DecisionMemoryService', () => {
   let service: DecisionMemoryService;
@@ -92,7 +93,7 @@ describe('DecisionMemoryService', () => {
     it('should create both AgentMemory (via MemoryService) and DecisionMemory from an assessed recommendation', async () => {
       mockPrisma.recommendation.findUnique.mockResolvedValue(mockRecommendation);
       mockPrisma.decisionMemory.upsert.mockResolvedValue(mockMemory);
-      mockMemoryService.createMemory.mockResolvedValue({} as any);
+      mockMemoryService.createMemory.mockResolvedValue({} as AgentMemoryEntry);
 
       const result = await service.createFromAssessment('rec-uuid-1');
 

@@ -36,6 +36,7 @@ export type Agent =
   | 'plan'
   | 'architect'
   | 'code'
+  | 'debug'
   | 'pre_verify'
   | 'post_verify'
   | 'human'
@@ -50,6 +51,8 @@ export type NonNullAgent = NonNullable<Agent>;
 export interface RetryCount {
   /** CODE → POST_VERIFY FAIL retries (max 1) */
   code: number;
+  /** DEBUG → POST_VERIFY retries (max 1) */
+  debug: number;
   /** ARCH → PLAN revision retries (max 1) */
   arch_plan_revision: number;
 }
@@ -125,7 +128,7 @@ interface BaseAllowedTransition {
 }
 
 /**
- * Discriminated union of all 14 allowed transitions (execution.contract.md §2.2).
+ * Discriminated union of all 17 allowed transitions (execution.contract.md §2.2).
  * Each variant encodes the exact `from` → `to` pair as literal types,
  * enabling TypeScript exhaustiveness checks and narrowing.
  */
@@ -156,4 +159,9 @@ export type AllowedTransition =
   // post_verify → *
   | (BaseAllowedTransition & { from: 'post_verify'; to: 'COMMIT'; condition: 'PASS or FLAG' })
   | (BaseAllowedTransition & { from: 'post_verify'; to: 'code'; condition: 'FAIL (max 1 retry)' })
-  | (BaseAllowedTransition & { from: 'post_verify'; to: 'architect'; condition: 'BLOCK' });
+  | (BaseAllowedTransition & { from: 'post_verify'; to: 'debug'; condition: 'FAIL after CODE retry exhausted' })
+  | (BaseAllowedTransition & { from: 'post_verify'; to: 'architect'; condition: 'BLOCK' })
+
+  // debug → *
+  | (BaseAllowedTransition & { from: 'debug'; to: 'post_verify'; condition: 'Fix applied, re-verify' })
+  | (BaseAllowedTransition & { from: 'debug'; to: 'architect'; condition: 'BLOCK (cannot fix)' });

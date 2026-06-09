@@ -1,14 +1,15 @@
 {
-  "execution_id": "6233a64b-b410-4aee-b6f7-a01af6503201",
+  "execution_id": "7fe2cbce-c75e-4f25-a98c-113a4ba0625e",
   "state": "COMMITTED",
   "phase": "COMMITTED",
   "plan_hash": null,
   "current_agent": "post_verify",
-  "hop_count": 6,
+  "hop_count": 10,
   "locked": false,
-  "timestamp": "2026-06-09T09:53:12.641Z",
+  "timestamp": "2026-06-09T18:57:52.272Z",
   "retry_count": {
-    "code": 0,
+    "code": 1,
+    "debug": 1,
     "arch_plan_revision": 0
   }
 }

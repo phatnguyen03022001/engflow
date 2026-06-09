@@ -7,7 +7,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, EdgeType } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateNodeDto } from '../dto/create-node.dto';
 import { CreateEdgeDto } from '../dto/create-edge.dto';
@@ -448,7 +448,7 @@ export class KnowledgeGraphService {
 
     const edgeFilter: Prisma.KnowledgeEdgeWhereInput = {};
     if (edgeType) {
-      edgeFilter.type = edgeType as any;
+      edgeFilter.type = edgeType as unknown as EdgeType;
     }
 
     const [outgoing, incoming] = await Promise.all([

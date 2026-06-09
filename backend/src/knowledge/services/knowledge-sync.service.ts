@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { NodeType } from '@prisma/client';
 import { SyncResult } from '../interfaces/knowledge.interface';
 
 @Injectable()
@@ -139,7 +140,7 @@ export class KnowledgeSyncService {
       await this.prisma.knowledgeNode.update({
         where: { nodeId: data.nodeId },
         data: {
-          type: data.type as any,
+          type: data.type as unknown as NodeType,
           label: data.label,
           module: data.module ?? null,
           sourceFile: data.sourceFile ?? null,
@@ -151,7 +152,7 @@ export class KnowledgeSyncService {
     await this.prisma.knowledgeNode.create({
       data: {
         nodeId: data.nodeId,
-        type: data.type as any,
+        type: data.type as unknown as NodeType,
         label: data.label,
         module: data.module ?? null,
         sourceFile: data.sourceFile ?? null,

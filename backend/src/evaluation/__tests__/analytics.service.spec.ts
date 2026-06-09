@@ -1,11 +1,18 @@
 /* @lifecycle ACTIVE — Unit tests for AnalyticsService */
+import { Max } from 'class-validator';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalyticsService } from '../services/analytics.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { QueryAnalyticsDto } from '../dto/query-analytics.dto';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
-  let prisma: any;
+  let prisma: {
+    agentExecution: { groupBy: jest.Mock; count: jest.Mock };
+    executionPhase: { groupBy: jest.Mock };
+    costLog: { groupBy: jest.Mock };
+    $queryRawUnsafe: jest.Mock;
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -313,8 +320,7 @@ describe('AnalyticsService', () => {
     });
 
     it('should enforce max take of 100 via DTO validation', () => {
-      const { Max } = require('class-validator');
-      const dto = new (require('../dto/query-analytics.dto').QueryAnalyticsDto)();
+      const dto = new QueryAnalyticsDto();
       // DTO has @Max(100) on take — validation is applied at controller level
       expect(dto).toBeDefined();
     });

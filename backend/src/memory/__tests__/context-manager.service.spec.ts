@@ -30,9 +30,9 @@ function makeMemory(overrides: Record<string, unknown> = {}) {
 
 describe('ContextManagerService', () => {
   let service: ContextManagerService;
-  let prisma: any;
-  let cache: any;
-  let kgService: any;
+  let prisma: { agentMemory: { findMany: jest.Mock } };
+  let cache: { get: jest.Mock; set: jest.Mock };
+  let kgService: { findNodes: jest.Mock };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -176,7 +176,7 @@ describe('ContextManagerService', () => {
       kgService.findNodes.mockResolvedValue({ items: [], total: 0 });
 
       // Mock rule files
-      mockFs.readFile.mockImplementation((filePath: any) => {
+      mockFs.readFile.mockImplementation((filePath: unknown) => {
         const p = String(filePath);
         if (p.includes('constitution.md')) return Promise.resolve('# Constitution\nRule 1');
         if (p.includes('008-lifecycle')) return Promise.resolve('# ADR-008\nLifecycle declarations');

@@ -1,6 +1,7 @@
 /* @lifecycle ACTIVE — Cost tracking and aggregation service (ADR-010) */
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateCostLogDto } from '../dto/create-cost-log.dto';
 import { CostReportQueryDto } from '../dto/cost-report-query.dto';
@@ -69,11 +70,11 @@ export class CostTrackerService {
     const toDate = query.to ? new Date(query.to) : undefined;
 
     // Build date filter
-    const dateFilter: any = {};
+    const dateFilter: { gte?: Date; lte?: Date } = {};
     if (fromDate) dateFilter.gte = fromDate;
     if (toDate) dateFilter.lte = toDate;
 
-    const where: any = {};
+    const where: Prisma.CostLogWhereInput = {};
     if (Object.keys(dateFilter).length > 0) {
       where.recordedAt = dateFilter;
     }

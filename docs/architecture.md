@@ -45,9 +45,13 @@ Semantic understanding of the codebase and domain.
 Orchestrator, Router, Planner, Memory, Context Manager.
 Decision-making and workflow coordination.
 
+**Governance:** ASK v2 Routing (ADR-ASK-001) — Virtual CTO Router specification for request classification, agent dispatch, session management, and routing output contracts.
+
 ### Layer 4 — Agent Registry
 Planning Agents, Architecture Agents, Coding Agents, Verification Agents, Reliability Agents.
 Specialized agents with defined responsibilities.
+
+**Catalog:** ADR-ASK-001 §2.2 (Agent Catalog) — definitive 8-agent catalog with single-responsibility boundaries, permission invariants, and layer assignments.
 
 ### Layer 5 — Execution
 Executor, Tool Runtime, Workspace Manager, Integration Gateway.

@@ -4,8 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 
 /** Minimal shape returned by the recommendation query in generateReport */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RecWithCheckpoints = Record<string, any> & {
+type RecWithCheckpoints = Record<string, unknown> & {
   recId: string;
   decisionDomain: string;
   decisionType: string;

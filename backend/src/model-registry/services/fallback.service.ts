@@ -1,8 +1,9 @@
 /* @lifecycle ACTIVE — Fallback chain resolution service (ADR-010) */
 
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
-import { ResolvedModel, FallbackStep } from '../interfaces/model-registry.interface';
+import { ResolvedModel, FallbackStep, ModelTier } from '../interfaces/model-registry.interface';
 
 @Injectable()
 export class FallbackService {
@@ -84,7 +85,7 @@ export class FallbackService {
         modelId: chain.fallbackModel.modelId,
         displayName: chain.fallbackModel.displayName,
         providerId: chain.fallbackModel.providerId,
-        tier: chain.fallbackModel.tier as any,
+        tier: chain.fallbackModel.tier as unknown as ModelTier,
       };
 
       steps.push({
@@ -114,7 +115,7 @@ export class FallbackService {
    * List all fallback chains with optional filters.
    */
   async getFallbackChains(filters?: { primaryModelId?: string; isActive?: boolean }) {
-    const where: any = {};
+    const where: Prisma.FallbackChainWhereInput = {};
 
     if (filters?.primaryModelId) {
       where.primaryModelId = filters.primaryModelId;
