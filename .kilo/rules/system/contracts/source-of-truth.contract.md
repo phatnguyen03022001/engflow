@@ -1,3 +1,6 @@
+/* @lifecycle ACTIVE — Source of Truth Hierarchy: Priority order and authority rules */
+/* @tags all */
+
 # Source of Truth Hierarchy
 
 ## Priority Order

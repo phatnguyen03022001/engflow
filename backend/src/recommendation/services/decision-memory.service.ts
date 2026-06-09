@@ -1,14 +1,19 @@
-// @lifecycle ACTIVE — Decision Memory service for cross-project learning
+// @deprecated — Use MemoryService instead. TASK-029 dual-writes to AgentMemory.
+// This service creates both AgentMemory (canonical) and DecisionMemory (compat).
 
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { MemoryService } from '../../memory/services/memory.service';
 
 @Injectable()
 export class DecisionMemoryService {
   private readonly logger = new Logger(DecisionMemoryService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly memoryService: MemoryService,
+  ) {}
 
   /**
    * Create decision memory from an assessed recommendation.
@@ -50,6 +55,34 @@ export class DecisionMemoryService {
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 2); // 2-year expiry
 
+    // Dual-write: canonical AgentMemory (via MemoryService)
+    const outcomeMap: Record<string, 'SUCCESS' | 'FAILURE' | 'MIXED' | 'BLOCKED' | 'ABANDONED'> = {
+      SUCCESS: 'SUCCESS',
+      MIXED: 'MIXED',
+      FAILURE: 'FAILURE',
+      ABANDONED: 'ABANDONED',
+    };
+
+    try {
+      const memOutcome = outcomeMap[recommendation.finalOutcome] ?? 'FAILURE';
+      await this.memoryService.createMemory({
+        agentType: 'PLAN' as any,
+        taskType: 'RECOMMENDATION_ASSESSMENT',
+        outcome: memOutcome as any,
+        success: recommendation.finalOutcome === 'SUCCESS',
+        decision: recommendation.recommendedOption,
+        context: contextFactors as Record<string, unknown>,
+        domain: recommendation.decisionDomain,
+        technology: recommendation.recommendedOption,
+        projectId: recommendation.projectId ?? '__global__',
+        sourceExecutionId: recommendation.id,
+        lessonsLearned: [],
+      });
+    } catch (error) {
+      this.logger.warn(`AgentMemory creation failed (non-blocking): ${(error as Error).message}`);
+    }
+
+    // Legacy DecisionMemory write (deprecated)
     const memory = await this.prisma.decisionMemory.upsert({
       where: {
         domain_technology_projectId: {
@@ -60,7 +93,7 @@ export class DecisionMemoryService {
       },
       update: {
         outcome: recommendation.finalOutcome,
-        solutionScore: null, // Will be updated when checkpoints are fully assessed
+        solutionScore: null,
         contextFactors: contextFactors as Prisma.InputJsonValue,
         referenceCount: { increment: 1 },
         lastReferencedAt: new Date(),

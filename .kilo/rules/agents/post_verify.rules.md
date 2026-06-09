@@ -1,4 +1,5 @@
 /* @lifecycle ACTIVE — Post-Verify Agent Rules: QA Gate After CODE Execution */
+/* @tags all */
 
 # Post-Verify Agent Rules
 
@@ -43,7 +44,7 @@ Code implementation output, original plan, acceptance criteria
 - Is the code maintainable?
 - Are there unnecessary abstractions?
 
-### 3.7 Lifecycle Compliance (ADR-008)
+### 3.7 Lifecycle Compliance ([ADR-008](../../../docs/decisions/008-lifecycle-declarations.md))
 - Do all new files have a valid @lifecycle declaration?
 - Is the lifecycle state appropriate?
 - Are GENERATED files excluded from governance authority?

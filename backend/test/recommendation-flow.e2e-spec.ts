@@ -4,6 +4,7 @@ import { RecommendationService } from '../src/recommendation/services/recommenda
 import { TrustScoreService } from '../src/recommendation/services/trust-score.service';
 import { CheckpointService } from '../src/recommendation/services/checkpoint.service';
 import { DecisionMemoryService } from '../src/recommendation/services/decision-memory.service';
+import { MemoryService } from '../src/memory/services/memory.service';
 import { ExecutiveReviewService } from '../src/recommendation/services/executive-review.service';
 import { AccuracyService } from '../src/recommendation/services/accuracy.service';
 import { PrismaService } from '../src/shared/prisma/prisma.service';
@@ -32,7 +33,9 @@ describe('Recommendation Lifecycle (e2e)', () => {
     accuracySnapshots: [],
   };
 
-  const mockPrisma = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mockPrisma: any = {
+    $transaction: jest.fn((cb: (tx: any) => unknown) => cb(mockPrisma)),
     recommendation: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
@@ -51,7 +54,6 @@ describe('Recommendation Lifecycle (e2e)', () => {
       findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      upsert: jest.fn(),
     },
     decisionMemory: {
       upsert: jest.fn(),
@@ -76,6 +78,18 @@ describe('Recommendation Lifecycle (e2e)', () => {
         DecisionMemoryService,
         ExecutiveReviewService,
         AccuracyService,
+        {
+          provide: MemoryService,
+          useValue: {
+            createMemory: jest.fn().mockResolvedValue({}),
+            querySimilar: jest.fn().mockResolvedValue([]),
+            getTopPatterns: jest.fn().mockResolvedValue([]),
+            getSummary: jest.fn().mockResolvedValue({ totalMemories: 0, byAgentType: {}, activeMemories: 0, staleMemories: 0, perDomainBreakdown: [] }),
+            createFromExecution: jest.fn().mockResolvedValue([]),
+            decayAll: jest.fn(),
+            cleanupStale: jest.fn().mockResolvedValue(0),
+          },
+        },
         { provide: PrismaService, useValue: mockPrisma },
       ],
     }).compile();
@@ -89,6 +103,9 @@ describe('Recommendation Lifecycle (e2e)', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    // Re-establish $transaction pass-through (resetAllMocks clears implementations)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockPrisma.$transaction.mockImplementation((cb: (tx: any) => unknown) => cb(mockPrisma));
     db.recommendations.clear();
     db.trustScores = [];
     db.checkpoints = [];
@@ -222,20 +239,16 @@ describe('Recommendation Lifecycle (e2e)', () => {
     expect(cpResult).toBeDefined();
 
     // ─── Step 4: RECALCULATE trust scores ──────────────────────────────────
-    // TrustScoreService.recalculateGlobal: find assessed recommendations
+    // Sequential order: recalculateGlobal → recalculateByDecisionType (6) → recalculateByDomain
+    // Global: 1 SUCCESS
     mockPrisma.recommendation.findMany
-      .mockResolvedValueOnce([{ finalOutcome: 'SUCCESS' }])  // recalculateGlobal
-      .mockResolvedValueOnce([{ finalOutcome: 'SUCCESS' }])  // recalculateByDomain (all assessed)
-      .mockResolvedValueOnce([{ finalOutcome: 'SUCCESS' }])  // recalculateByDomain (grouped)
-      .mockResolvedValue([]);                                 // recalculateByDecisionType (AP=empty)
-    // recalculateByDecisionType: 6 types, first TC has data, rest empty
+      .mockResolvedValueOnce([{ finalOutcome: 'SUCCESS' }])  // #1 Global
+      .mockResolvedValueOnce([{ finalOutcome: 'SUCCESS' }])  // #2 DT: TC
+      .mockResolvedValue([]);                                 // #3-7 DT: AP, IA, TS, PC, BB
+
+    // Domain: needs decisionDomain field
     mockPrisma.recommendation.findMany
-      .mockResolvedValueOnce([{ finalOutcome: 'SUCCESS' }])  // TC
-      .mockResolvedValue([])  // AP
-      .mockResolvedValue([])  // IA
-      .mockResolvedValue([])  // TS
-      .mockResolvedValue([])  // PC
-      .mockResolvedValue([]); // BB
+      .mockResolvedValueOnce([{ decisionDomain: 'queue-system', finalOutcome: 'SUCCESS' }]);
 
     mockPrisma.trustScore.findFirst
       .mockResolvedValue(null);  // No existing records → create path
@@ -245,11 +258,11 @@ describe('Recommendation Lifecycle (e2e)', () => {
     await trustScoreService.recalculateAll();
 
     // Trust score for GLOBAL with 1 SUCCESS out of 1: (1 + 6) / (1 + 6 + 4) = 7/11 ≈ 64
-    const globalCreateCall = mockPrisma.trustScore.create.mock.calls.find(
-      (call) => call[0].data.level === 'GLOBAL',
-    );
+    const globalCreateCall = (
+      mockPrisma.trustScore.create.mock.calls as Array<[{ data: { level: string; score: number } }]>
+    ).find((call) => call[0].data.level === 'GLOBAL');
     expect(globalCreateCall).toBeDefined();
-    expect(globalCreateCall[0].data.score).toBe(64);
+    expect(globalCreateCall![0].data.score).toBe(64);
   });
 
   it('should handle a recommendation that gets FAILURE outcome', async () => {

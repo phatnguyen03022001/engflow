@@ -11,6 +11,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { RecommendationService } from './services/recommendation.service';
 import { CheckpointService } from './services/checkpoint.service';
 import { TrustScoreService } from './services/trust-score.service';
@@ -23,6 +24,8 @@ import { UpdateCheckpointDto } from './dto/update-checkpoint.dto';
 import { AccuracyQueryDto } from './dto/accuracy-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+@ApiTags('Recommendations')
+@ApiBearerAuth('JWT-auth')
 @Controller('recommendations')
 @UseGuards(JwtAuthGuard)
 export class RecommendationController {
@@ -39,11 +42,13 @@ export class RecommendationController {
   // ─── CRUD ─────────────────────────────────────────────────────────────────
 
   @Post()
+  @ApiOperation({ summary: 'Create a new recommendation' })
   create(@Body() dto: CreateRecommendationDto) {
     return this.recommendationService.create(dto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'List recommendations with optional filters' })
   findAll(
     @Query('skip') skip?: string,
     @Query('take') take?: string,
@@ -63,11 +68,13 @@ export class RecommendationController {
   }
 
   @Get('stats')
+  @ApiOperation({ summary: 'Get accuracy metrics and stats' })
   getStats() {
     return this.accuracyService.computeMetrics();
   }
 
   @Get('status-summary')
+  @ApiOperation({ summary: 'Get recommendation counts by tracking status' })
   getStatusSummary() {
     return this.recommendationService.countByStatus();
   }
@@ -75,6 +82,7 @@ export class RecommendationController {
   // ─── Executive Review (must precede :id to avoid route capture) ───
 
   @Get('executive-review')
+  @ApiOperation({ summary: 'Generate executive review report' })
   getExecutiveReview() {
     return this.executiveReviewService.generateReport();
   }
@@ -82,6 +90,7 @@ export class RecommendationController {
   // ─── Trust Scores (must precede :id to avoid route capture) ───────────
 
   @Get('trust-scores')
+  @ApiOperation({ summary: 'Get trust scores with optional filters' })
   getTrustScores(
     @Query('level') level?: string,
     @Query('domain') domain?: string,
@@ -91,16 +100,19 @@ export class RecommendationController {
   }
 
   @Post('trust-scores/recalculate')
+  @ApiOperation({ summary: 'Recalculate all trust scores' })
   recalculateTrustScores() {
     return this.trustScoreService.recalculateAll();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a recommendation by ID' })
   findById(@Param('id') id: string) {
     return this.recommendationService.findById(id);
   }
 
   @Patch(':id/status')
+  @ApiOperation({ summary: 'Update a recommendation tracking status' })
   updateStatus(
     @Param('id') id: string,
     @Body('trackingStatus') trackingStatus: string,
@@ -109,6 +121,7 @@ export class RecommendationController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a recommendation' })
   remove(@Param('id') id: string) {
     return this.recommendationService.remove(id);
   }
@@ -116,6 +129,7 @@ export class RecommendationController {
   // ─── Checkpoints ──────────────────────────────────────────────────────────
 
   @Post(':id/checkpoints')
+  @ApiOperation({ summary: 'Upsert a checkpoint for a recommendation' })
   upsertCheckpoint(
     @Param('id') id: string,
     @Body() dto: UpdateCheckpointDto,
@@ -124,6 +138,7 @@ export class RecommendationController {
   }
 
   @Get(':id/checkpoints')
+  @ApiOperation({ summary: 'Get checkpoints for a recommendation' })
   getCheckpoints(@Param('id') id: string) {
     return this.checkpointService.findByRecommendationId(id);
   }
@@ -131,6 +146,7 @@ export class RecommendationController {
   // ─── Decision Memory ──────────────────────────────────────────────────────
 
   @Get('decision-memory')
+  @ApiOperation({ summary: 'Query decision memory or get domain summary' })
   getDecisionMemory(
     @Query('domain') domain?: string,
     @Query('techStack') techStack?: string,
@@ -150,11 +166,13 @@ export class RecommendationController {
   // ─── Accuracy Snapshots ───────────────────────────────────────────────────
 
   @Get('accuracy-snapshots/latest')
+  @ApiOperation({ summary: 'Get latest accuracy snapshot' })
   getLatestSnapshot() {
     return this.accuracyService.getLatestSnapshot();
   }
 
   @Post('accuracy-snapshots')
+  @ApiOperation({ summary: 'Create a new accuracy snapshot' })
   createSnapshot() {
     return this.accuracyService.createSnapshot();
   }
@@ -162,6 +180,7 @@ export class RecommendationController {
   // ─── Ask Integration ──────────────────────────────────────────────────────
 
   @Post('ask-ingest')
+  @ApiOperation({ summary: 'Ingest a text snippet from Ask' })
   ingestFromAsk(@Body('text') text: string) {
     return this.askIngestService.ingestFromText(text);
   }

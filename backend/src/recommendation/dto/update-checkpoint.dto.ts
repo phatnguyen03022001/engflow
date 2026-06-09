@@ -77,17 +77,16 @@ export class UpdateCheckpointDto {
   @IsEnum(TeamSatisfaction)
   teamSatisfaction?: string;
 
+  // These fields are JSONB in the database and accept any valid JSON (object or array).
+  // Validation is intentionally loose since Prisma casts to InputJsonValue.
   @IsOptional()
-  @IsArray()
-  risksMaterialized?: Record<string, unknown>[];
+  risksMaterialized?: Record<string, unknown> | unknown[];
 
   @IsOptional()
-  @IsArray()
-  risksAvoided?: Record<string, unknown>[];
+  risksAvoided?: Record<string, unknown> | unknown[];
 
   @IsOptional()
-  @IsArray()
-  missedRisks?: Record<string, unknown>[];
+  missedRisks?: Record<string, unknown> | unknown[];
 
   @IsOptional()
   @IsInt()

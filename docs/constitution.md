@@ -61,7 +61,7 @@ New technologies require explicit ADR approval.
 
 - All architecture changes must update docs/architecture.md
 - Major decisions require ADR in docs/decisions.md
-- Lifecycle declarations on all new files (ADR-008)
+- Lifecycle declarations on all new files ([ADR-008](decisions/008-lifecycle-declarations.md))
 
 ## §9. Security
 

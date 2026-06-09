@@ -1,4 +1,5 @@
 /* @lifecycle ACTIVE — Execution Contract: State Machine & Flow Control */
+/* @tags all */
 
 # Execution Contract
 

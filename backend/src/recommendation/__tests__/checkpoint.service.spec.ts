@@ -2,11 +2,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { CheckpointService } from '../services/checkpoint.service';
+import { DecisionMemoryService } from '../services/decision-memory.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 
 describe('CheckpointService', () => {
   let service: CheckpointService;
   let prisma: typeof mockPrisma;
+  let decisionMemory: typeof mockDecisionMemory;
 
   const mockPrisma = {
     recommendation: {
@@ -17,6 +19,10 @@ describe('CheckpointService', () => {
       findMany: jest.fn(),
       upsert: jest.fn(),
     },
+  };
+
+  const mockDecisionMemory = {
+    createFromAssessment: jest.fn(),
   };
 
   const mockRecommendation = {
@@ -61,11 +67,13 @@ describe('CheckpointService', () => {
       providers: [
         CheckpointService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: DecisionMemoryService, useValue: mockDecisionMemory },
       ],
     }).compile();
 
     service = module.get<CheckpointService>(CheckpointService);
     prisma = module.get(PrismaService);
+    decisionMemory = module.get(DecisionMemoryService);
   });
 
   it('should be defined', () => {
@@ -95,6 +103,8 @@ describe('CheckpointService', () => {
       });
       expect(mockPrisma.checkpoint.upsert).toHaveBeenCalled();
       expect(result).toBeDefined();
+      // DecisionMemory should be created from the auto-transition
+      expect(mockDecisionMemory.createFromAssessment).toHaveBeenCalledWith('rec-uuid-1');
     });
 
     it('should throw NotFoundException if recommendation does not exist', async () => {
@@ -118,6 +128,8 @@ describe('CheckpointService', () => {
       await service.upsertCheckpoint('rec-uuid-1', mockCheckpointDto);
 
       expect(mockPrisma.recommendation.update).not.toHaveBeenCalled();
+      // No transition → no decision memory creation
+      expect(mockDecisionMemory.createFromAssessment).not.toHaveBeenCalled();
     });
 
     it('should determine FAILURE when any verdict is FAILED', async () => {
@@ -141,6 +153,8 @@ describe('CheckpointService', () => {
           data: expect.objectContaining({ finalOutcome: 'FAILURE' }),
         }),
       );
+      // DecisionMemory creation should still fire (non-blocking)
+      expect(mockDecisionMemory.createFromAssessment).toHaveBeenCalledWith('rec-uuid-1');
     });
 
     it('should determine MIXED when any verdict is PROBLEM', async () => {
@@ -164,6 +178,8 @@ describe('CheckpointService', () => {
           data: expect.objectContaining({ finalOutcome: 'MIXED' }),
         }),
       );
+      // DecisionMemory creation should still fire (non-blocking)
+      expect(mockDecisionMemory.createFromAssessment).toHaveBeenCalledWith('rec-uuid-1');
     });
   });
 
@@ -239,7 +255,7 @@ describe('CheckpointService', () => {
 
       expect(result.confidence).toBe('LOW');
       expect(result.recommendationId).toBe('rec-uuid-1');
-      expect(result.message).toContain('Auto-assessment attempted');
+      expect(result.message).toContain('Auto-assessment is not yet implemented');
     });
 
     it('should throw NotFoundException if recommendation does not exist', async () => {

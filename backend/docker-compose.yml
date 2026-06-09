@@ -27,6 +27,7 @@ services:
       DATABASE_URL: postgresql://floweng:floweng@postgres:5432/floweng?schema=public
       JWT_SECRET: change-me-in-production
       JWT_EXPIRES_IN: 7d
+      AGENT_API_KEY: floweng-agent-dev-key
       PORT: '3001'
     depends_on:
       postgres:

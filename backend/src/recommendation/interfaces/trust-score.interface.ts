@@ -1,5 +1,19 @@
 // @lifecycle ACTIVE — Trust score TypeScript types
 
+/**
+ * Map a trust score to a human-readable label.
+ *
+ * SYNC NOTE: this logic is duplicated in kilo.jsonc Ask prompt.
+ * If you change these thresholds, update the Ask prompt text accordingly.
+ */
+export function getTrustLabel(score: number): string {
+  if (score >= 90) return 'VERY HIGH';
+  if (score >= 75) return 'HIGH';
+  if (score >= 60) return 'MODERATE';
+  if (score >= 40) return 'LOW';
+  return 'UNTRUSTED';
+}
+
 export interface TrustScoreResult {
   level: string;
   domain: string | null;

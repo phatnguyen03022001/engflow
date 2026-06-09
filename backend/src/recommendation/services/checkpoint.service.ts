@@ -1,13 +1,17 @@
 // @lifecycle ACTIVE — Checkpoint scheduling and assessment service
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { DecisionMemoryService } from './decision-memory.service';
 import { UpdateCheckpointDto } from '../dto/update-checkpoint.dto';
 
 @Injectable()
 export class CheckpointService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly decisionMemoryService: DecisionMemoryService,
+  ) {}
 
   /**
    * Create or update a checkpoint assessment for a recommendation.
@@ -134,7 +138,18 @@ export class CheckpointService {
 
   /**
    * Quick assessment from codebase signals (git log, ADRs, etc.).
-   * Placeholder for automated evidence gathering.
+   *
+   * Phase 1 intentional design: all checkpoint assessments are manual (human-in-the-loop).
+   * Automated evidence gathering is deferred to Phase 2 when the recommendation
+   * registry has sufficient data volume to justify the engineering investment.
+   *
+   * Future Phase 2 implementation plan:
+   *   - Git log: detect whether the recommended technology was introduced/reverted
+   *   - ADRs: detect whether the decision was formally reversed
+   *   - Codebase drift: detect divergence from recommended architecture
+   *
+   * Until then, the scheduler logs warnings for due checkpoints and relies on
+   * manual assessment via PUT /:id/checkpoints.
    */
   async autoAssess(recommendationId: string) {
     const recommendation = await this.prisma.recommendation.findUnique({
@@ -144,22 +159,19 @@ export class CheckpointService {
       throw new NotFoundException(`Recommendation ${recommendationId} not found`);
     }
 
-    // TODO: Implement actual evidence gathering from:
-    //   - Git log (was technology introduced/reverted?)
-    //   - ADRs (was decision reversed?)
-    //   - Codebase drift detection
-    //
-    // For now, this is a no-op placeholder that returns the recommendation
-    // with a note that automated assessment was attempted but no evidence found.
-
     return {
       recommendationId,
-      message: 'Auto-assessment attempted — no automated evidence gathered. Manual assessment required.',
+      message: 'Auto-assessment is not yet implemented (Phase 1 — manual assessment required).',
       confidence: 'LOW',
     };
   }
 
-  private async checkAndTransition(recommendationId: string) {
+  /**
+   * Check if all checkpoints for a recommendation are assessed and transition
+   * to ASSESSED if so. Called after each checkpoint upsert. Also exposed as
+   * public for scheduler use.
+   */
+  async checkAndTransition(recommendationId: string) {
     const checkpoints = await this.prisma.checkpoint.findMany({
       where: { recommendationId },
     });
@@ -190,5 +202,17 @@ export class CheckpointService {
         assessedAt: new Date(),
       },
     });
+
+    // Populate decision memory when transition completes
+    try {
+      await this.decisionMemoryService.createFromAssessment(recommendationId);
+    } catch (error) {
+      // Non-blocking: trust score recalculation will still work without memories
+      this.logger.warn(
+        `Failed to create decision memory for ${recommendationId}: ${(error as Error).message}`,
+      );
+    }
   }
+
+  private readonly logger = new Logger(CheckpointService.name);
 }

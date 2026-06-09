@@ -15,7 +15,7 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid(7))
   email     String   @unique
   password  String
   name      String
@@ -35,7 +35,7 @@ enum Difficulty {
 }
 
 model Lesson {
-  id          String     @id @default(uuid())
+  id          String     @id @default(uuid(7))
   title       String
   description String?
   difficulty  Difficulty @default(BEGINNER)
@@ -50,7 +50,7 @@ model Lesson {
 }
 
 model Exercise {
-  id          String   @id @default(uuid())
+  id          String   @id @default(uuid(7))
   question    String
   answer      String
   options     String?
@@ -66,7 +66,7 @@ model Exercise {
 }
 
 model UserLesson {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid(7))
   completed Boolean  @default(false)
   score     Int?
   userId    String   @map("user_id")
@@ -83,7 +83,7 @@ model UserLesson {
 // ─── Recommendation Registry (TASK-019) ──────────────────────────────────────
 
 model Recommendation {
-  id                   String   @id @default(uuid())
+  id                   String   @id @default(uuid(7))
   recId                String   @unique @map("rec_id")
   mode                 String
   decisionType         String   @map("decision_type")
@@ -151,7 +151,7 @@ model Recommendation {
 }
 
 model RecommendationOption {
-  id                String         @id @default(uuid())
+  id                String         @id @default(uuid(7))
   recommendationId  String         @map("recommendation_id")
   label             String
   description       String
@@ -162,7 +162,7 @@ model RecommendationOption {
 }
 
 model Checkpoint {
-  id                  String         @id @default(uuid())
+  id                  String         @id @default(uuid(7))
   recommendationId    String         @map("recommendation_id")
   checkpoint          String
   evaluatedAt         DateTime?      @map("evaluated_at")
@@ -214,8 +214,69 @@ model Checkpoint {
   @@map("checkpoints")
 }
 
+// ─── Agent Memory (TASK-029) — Canonical memory store ────────────────────
+
+enum AgentType {
+  ROUTER
+  PLAN
+  ARCHITECT
+  CODE
+  PRE_VERIFY
+  POST_VERIFY
+}
+
+enum MemoryOutcome {
+  SUCCESS
+  FAILURE
+  MIXED
+  BLOCKED
+  ABANDONED
+}
+
+model AgentMemory {
+  id                  String        @id @default(uuid(7))
+  memoryId            String        @unique @map("memory_id")
+  agentType           AgentType     @map("agent_type")
+  taskType            String        @map("task_type")
+  context             Json?         @map("context")
+  decision            String?       @map("decision")
+  outcome             MemoryOutcome @map("outcome")
+  success             Boolean       @map("success")
+  confidence          Float?        @map("confidence")
+  lessonsLearned      String[]      @map("lessons_learned")
+
+  // Source traceability
+  sourceExecutionId   String?       @map("source_execution_id")
+  sourcePhaseId       String?       @map("source_phase_id")
+
+  // Compatibility fields (maps from DecisionMemory)
+  domain              String?
+  technology          String?
+  projectId           String        @default("__global__") @map("project_id")
+
+  // Scoring & decay
+  applicabilityScore  Float?        @map("applicability_score")
+  referenceCount      Int           @default(0) @map("reference_count")
+  decayWeight         Float         @default(1.0) @map("decay_weight")
+
+  createdAt           DateTime      @default(now()) @map("created_at")
+  lastReferencedAt    DateTime?     @map("last_referenced_at")
+  expiresAt           DateTime?     @map("expires_at")
+
+  @@index([agentType])
+  @@index([taskType])
+  @@index([success])
+  @@index([domain])
+  @@index([agentType, success])
+  @@index([lastReferencedAt])
+  @@unique([sourceExecutionId, agentType])
+  @@map("agent_memories")
+}
+
+// @deprecated — Use AgentMemory instead. TASK-029 migration maps all data.
+// Removal planned for future ADR.
 model DecisionMemory {
-  id                  String   @id @default(uuid())
+  id                  String   @id @default(uuid(7))
   memoryId            String   @unique @map("memory_id")
   domain              String
   technology          String
@@ -241,7 +302,7 @@ model DecisionMemory {
 }
 
 model TrustScore {
-  id                String   @id @default(uuid())
+  id                String   @id @default(uuid(7))
   level             String
   domain            String?
   decisionType      String?  @map("decision_type")
@@ -261,7 +322,7 @@ model TrustScore {
 }
 
 model AccuracySnapshot {
-  id                    String   @id @default(uuid())
+  id                    String   @id @default(uuid(7))
   snapshotDate          DateTime @default(now()) @map("snapshot_date")
   totalRecommendations  Int      @map("total_recommendations")
   totalAssessed         Int      @map("total_assessed")
@@ -281,4 +342,336 @@ model AccuracySnapshot {
 
   @@index([snapshotDate])
   @@map("accuracy_snapshots")
+}
+
+// ─── Agent Evaluation Harness (ADR-003) ─────────────────────────────────────
+
+model AgentExecution {
+  id                      String    @id @default(uuid(7))
+  executionId             String    @unique @map("execution_id")
+  requestSummary          String    @map("request_summary")
+  routerRoute             String    @map("router_route")
+  routerConfidence        Float     @map("router_confidence")
+  routerRisk              String    @map("router_risk")
+  routerReason            String    @map("router_reason")
+  planSummary             String?   @map("plan_summary")
+  planTaskCount           Int?      @map("plan_task_count")
+  archReviewed            Boolean   @default(false) @map("arch_reviewed")
+  archRevisionNeeded      Boolean   @default(false) @map("arch_revision_needed")
+  preVerifyDecision       String?   @map("pre_verify_decision")
+  preVerifyFlags          Json?     @map("pre_verify_flags")
+  codeAttempts            Int       @default(0) @map("code_attempts")
+  codeFirstAttemptSuccess Boolean?  @map("code_first_attempt_success")
+  postVerifyDecision      String?   @map("post_verify_decision")
+  postVerifyIssues        Json?     @map("post_verify_issues")
+  retryCount              Int       @default(0) @map("retry_count")
+  debugSuccess            Boolean?  @map("debug_success")
+  finalOutcome            String    @map("final_outcome")
+  totalDurationMs         Int?      @map("total_duration_ms")
+  committedAt             DateTime? @map("committed_at")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  phases ExecutionPhase[]
+
+  @@index([finalOutcome])
+  @@index([routerRoute])
+  @@index([createdAt])
+  @@index([routerRoute, finalOutcome])
+  @@map("agent_executions")
+}
+
+model ExecutionPhase {
+  id              String    @id @default(uuid(7))
+  phaseId         String    @unique @map("phase_id")
+  executionId     String    @map("execution_id")
+  agentType       String    @map("agent_type")
+  phaseOrder      Int       @map("phase_order")
+  input           Json?     @map("input")
+  output          Json?     @map("output")
+  decision        String?   @map("decision")
+  decisionReason  String?   @map("decision_reason")
+  durationMs      Int?      @map("duration_ms")
+  modelUsed       String?   @map("model_used")
+  transitionedTo  String?   @map("transitioned_to")
+  recordedAt      DateTime  @default(now()) @map("recorded_at")
+
+  execution AgentExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@index([executionId])
+  @@index([agentType])
+  @@index([executionId, phaseOrder])
+  @@map("execution_phases")
+}
+
+model AgentMetric {
+  id                    String   @id @default(uuid(7))
+  agentType             String   @map("agent_type")
+  metricName            String   @map("metric_name")
+  metricValue           Float    @map("metric_value")
+  sampleSize            Int      @map("sample_size")
+  confidenceIntervalLow  Float?   @map("confidence_interval_low")
+  confidenceIntervalHigh Float?   @map("confidence_interval_high")
+  window                String   @map("window")
+  computedAt            DateTime @map("computed_at")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  dimensions MetricDimension[]
+
+  @@unique([agentType, metricName, window, computedAt])
+  @@index([agentType])
+  @@index([computedAt])
+  @@map("agent_metrics")
+}
+
+model MetricDimension {
+  id             String  @id @default(uuid(7))
+  metricId       String  @map("metric_id")
+  dimensionKey   String  @map("dimension_key")
+  dimensionValue String  @map("dimension_value")
+  count          Int     @map("count")
+  value          Float   @map("value")
+
+  metric AgentMetric @relation(fields: [metricId], references: [id], onDelete: Cascade)
+
+  @@index([metricId])
+  @@index([metricId, dimensionKey, dimensionValue])
+  @@map("metric_dimensions")
+}
+
+// ─── Model Registry — Layer 9 (ADR-010) ──────────────────────────────────────
+
+enum ModelTier {
+  FREE
+  BUDGET
+  STANDARD
+  PREMIUM
+  EXPERIMENTAL
+}
+
+enum ModelCapability {
+  CHAT
+  JSON_MODE
+  FUNCTION_CALLING
+  VISION
+  TOOL_USE
+  REASONING
+}
+
+model ModelProvider {
+  id         String   @id @default(uuid(7))
+  providerId String   @unique @map("provider_id")
+  name       String
+  apiBaseUrl String   @map("api_base_url")
+  apiKeyEnv  String   @map("api_key_env")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  models ModelRegistry[]
+
+  @@index([isActive])
+  @@map("model_providers")
+}
+
+model ModelRegistry {
+  id              String          @id @default(uuid(7))
+  modelId         String          @unique @map("model_id")
+  providerId      String          @map("provider_id")
+  displayName     String          @map("display_name")
+  tier            ModelTier       @default(STANDARD)
+  capabilities    ModelCapability[]
+  contextWindow   Int             @map("context_window")
+  maxOutputTokens Int             @default(4096) @map("max_output_tokens")
+  costPer1kInput  Float           @map("cost_per_1k_input")
+  costPer1kOutput Float           @map("cost_per_1k_output")
+  avgLatencyMs    Int?            @map("avg_latency_ms")
+  successRate     Float?          @map("success_rate")
+  qualityScore    Float?          @map("quality_score")
+  isActive        Boolean         @default(true) @map("is_active")
+  deprecatedAt    DateTime?       @map("deprecated_at")
+  replacedByModelId String?       @map("replaced_by_model_id")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  provider    ModelProvider @relation(fields: [providerId], references: [providerId])
+  costLogs    CostLog[]
+  routes      ModelRoute[]
+  fallbackFromPrimary  FallbackChain[] @relation("FallbackFromPrimary")
+  fallbackToSecondary  FallbackChain[] @relation("FallbackToSecondary")
+
+  @@index([tier])
+  @@index([isActive])
+  @@index([providerId])
+  @@index([tier, isActive])
+  @@map("model_registry")
+}
+
+model ModelRoute {
+  id             String  @id @default(uuid(7))
+  routeId        String  @unique @map("route_id")
+  agentType      String  @map("agent_type")
+  taskType       String  @map("task_type")
+  primaryModelId String  @map("primary_model_id")
+  priority       Int     @default(0)
+  maxCostUsd     Float?  @map("max_cost_usd")
+  maxLatencyMs   Int?    @map("max_latency_ms")
+  isActive       Boolean @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  primaryModel ModelRegistry @relation(fields: [primaryModelId], references: [modelId])
+
+  @@unique([agentType, taskType, priority])
+  @@index([agentType, taskType])
+  @@index([isActive])
+  @@map("model_routes")
+}
+
+model FallbackChain {
+  id               String   @id @default(uuid(7))
+  chainId          String   @unique @map("chain_id")
+  primaryModelId   String   @map("primary_model_id")
+  fallbackModelId  String   @map("fallback_model_id")
+  priority         Int      @default(1)
+  triggerOnHttpCode Int?    @map("trigger_on_http_code")
+  triggerOnTimeoutMs Int?   @map("trigger_on_timeout_ms")
+  maxRetries       Int      @default(1) @map("max_retries")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  primaryModel  ModelRegistry @relation("FallbackFromPrimary", fields: [primaryModelId], references: [modelId])
+  fallbackModel ModelRegistry @relation("FallbackToSecondary", fields: [fallbackModelId], references: [modelId])
+
+  @@index([primaryModelId, priority])
+  @@index([isActive])
+  @@index([primaryModelId, fallbackModelId])
+  @@map("fallback_chains")
+}
+
+model CostLog {
+  id            String   @id @default(uuid(7))
+  modelId       String   @map("model_id")
+  executionId   String   @map("execution_id")
+  phaseId       String?  @map("phase_id")
+  inputTokens   Int      @map("input_tokens")
+  outputTokens  Int      @map("output_tokens")
+  costUsd       Float    @map("cost_usd")
+  latencyMs     Int      @map("latency_ms")
+  wasFallback   Boolean  @default(false) @map("was_fallback")
+  fallbackFrom  String?  @map("fallback_from")
+  recordedAt    DateTime @default(now()) @map("recorded_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  model ModelRegistry @relation(fields: [modelId], references: [modelId])
+
+  @@index([modelId, recordedAt])
+  @@index([executionId])
+  @@index([recordedAt])
+  @@index([executionId, phaseId])
+  @@map("cost_logs")
+}
+
+// ─── Knowledge Graph — Layer 2 (ADR-011) ─────────────────────────────────
+
+enum NodeType {
+  REQUIREMENT
+  ARCHITECTURE
+  CODE
+  TEST
+  DECISION
+}
+
+enum EdgeType {
+  DEPENDS_ON
+  IMPLEMENTS
+  TESTS
+  DECIDES
+  REFERENCES
+  SUPERSEDES
+}
+
+model KnowledgeNode {
+  id          String   @id @default(uuid(7))
+  nodeId      String   @unique @map("node_id")
+  type        NodeType
+  label       String
+  description String?
+  properties  Json?    @map("properties")
+  sourceFile  String?  @map("source_file")
+  module      String?
+  isActive    Boolean  @default(true) @map("is_active")
+
+  outgoingEdges KnowledgeEdge[] @relation("SourceNode")
+  incomingEdges KnowledgeEdge[] @relation("TargetNode")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([type])
+  @@index([module])
+  @@index([type, module])
+  @@index([isActive])
+  @@map("knowledge_nodes")
+}
+
+model KnowledgeEdge {
+  id           String   @id @default(uuid(7))
+  edgeId       String   @unique @map("edge_id")
+  sourceNodeId String   @map("source_node_id")
+  targetNodeId String   @map("target_node_id")
+  type         EdgeType
+  weight       Float    @default(1.0)
+  properties   Json?    @map("properties")
+  description  String?
+
+  sourceNode KnowledgeNode @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode KnowledgeNode @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+  @@index([type])
+  @@index([sourceNodeId, type])
+  @@map("knowledge_edges")
+}
+
+// ─── Drift Detection (ADR-013) ─────────────────────────────────────────
+
+enum DetectorType {
+  STRUCTURE
+  POLICY
+  API_CONTRACT
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model DriftEvent {
+  id            String       @id @default(uuid(7))
+  detectorType  DetectorType @map("detector_type")
+  severity      Severity
+  title         String
+  description   String
+  sourcePath    String?      @map("source_path")
+  expectedValue String?      @map("expected_value")
+  actualValue   String?      @map("actual_value")
+  isResolved    Boolean      @default(false) @map("is_resolved")
+  resolvedAt    DateTime?    @map("resolved_at")
+  detectedAt    DateTime     @default(now()) @map("detected_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  @@index([detectorType])
+  @@index([severity])
+  @@index([isResolved])
+  @@index([detectedAt])
+  @@index([detectorType, isResolved])
+  @@map("drift_events")
 }

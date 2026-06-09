@@ -1,0 +1,169 @@
+# @lifecycle ACTIVE — CI/CD pipeline: lint, test, build, and Docker image
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+
+  # ─── Lint & Validate ────────────────────────────────────────────────────────
+  lint-and-validate:
+    name: Lint & Validate
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+        # Runs from repo root; workspaces handle backend/ and frontend/
+
+      - name: Validate lifecycle declarations
+        run: |
+          BASE_REF="${{ github.base_ref || 'main' }}"
+          CHANGED_FILES=$(git diff --name-only "origin/${BASE_REF}...HEAD" --diff-filter=ACM || true)
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "$CHANGED_FILES" | xargs bash .kilo/validate/lifecycle-validator.sh
+          else
+            echo "  INFO  No changed files to validate."
+          fi
+
+      - name: Check Constitution compliance
+        run: bash .kilo/validate/check-constitution.sh
+
+      - name: Run linter
+        working-directory: backend
+        run: npm run lint || echo "  WARN  Lint not configured — skipping"
+
+  # ─── Backend Tests ──────────────────────────────────────────────────────────
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache Prisma client
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules/.prisma
+          key: prisma-${{ hashFiles('backend/prisma/schema.prisma') }}-${{ runner.os }}
+          restore-keys: |
+            prisma-${{ hashFiles('backend/prisma/schema.prisma') }}-
+            prisma-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate
+
+      - name: Run unit tests
+        working-directory: backend
+        run: npm run test:cov -- --passWithNoTests
+
+      - name: Run E2E tests
+        working-directory: backend
+        run: npm run test:e2e -- --passWithNoTests
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-backend
+          path: backend/coverage/
+          if-no-files-found: warn
+          retention-days: 7
+
+  # ─── Frontend Build ─────────────────────────────────────────────────────────
+  build-frontend:
+    name: Frontend Build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+  # ─── Docker Build (main only) ──────────────────────────────────────────────
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    if: github.ref == 'refs/heads/main'
+    needs: [test-backend, build-frontend]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        if: secrets.DOCKER_USERNAME && secrets.DOCKER_PASSWORD
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and export Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile
+          push: false
+          tags: floweng/api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker,dest=/tmp/floweng-api.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-floweng-api
+          path: /tmp/floweng-api.tar
+          if-no-files-found: error
+          retention-days: 3

@@ -2,7 +2,7 @@
 
 # ADR-001 — Reuse-First Governance Framework
 
-**Status:** Proposed
+**Status:** Active
 **Created:** 2026-06-07
 **Author:** Architect Agent (TASK-018)
 **Supersedes:** None (first ADR)

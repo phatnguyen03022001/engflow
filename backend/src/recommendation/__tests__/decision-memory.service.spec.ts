@@ -1,11 +1,13 @@
-// @lifecycle ACTIVE — Unit tests for DecisionMemoryService
+// @lifecycle ACTIVE — Unit tests for DecisionMemoryService (TASK-029: dual-writes to AgentMemory)
 import { Test, TestingModule } from '@nestjs/testing';
 import { DecisionMemoryService } from '../services/decision-memory.service';
+import { MemoryService } from '../../memory/services/memory.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 
 describe('DecisionMemoryService', () => {
   let service: DecisionMemoryService;
   let prisma: typeof mockPrisma;
+  let memoryService: jest.Mocked<MemoryService>;
 
   const mockPrisma = {
     recommendation: {
@@ -20,6 +22,16 @@ describe('DecisionMemoryService', () => {
       count: jest.fn(),
     },
   };
+
+  const mockMemoryService = {
+    createMemory: jest.fn(),
+    querySimilar: jest.fn(),
+    getSummary: jest.fn(),
+    getTopPatterns: jest.fn(),
+    createFromExecution: jest.fn(),
+    decayAll: jest.fn(),
+    cleanupStale: jest.fn(),
+  } as unknown as jest.Mocked<MemoryService>;
 
   const mockRecommendation = {
     id: 'rec-uuid-1',
@@ -63,11 +75,13 @@ describe('DecisionMemoryService', () => {
       providers: [
         DecisionMemoryService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: MemoryService, useValue: mockMemoryService },
       ],
     }).compile();
 
     service = module.get<DecisionMemoryService>(DecisionMemoryService);
     prisma = module.get(PrismaService);
+    memoryService = module.get(MemoryService);
   });
 
   it('should be defined', () => {
@@ -75,15 +89,26 @@ describe('DecisionMemoryService', () => {
   });
 
   describe('createFromAssessment', () => {
-    it('should create a decision memory from an assessed recommendation', async () => {
+    it('should create both AgentMemory (via MemoryService) and DecisionMemory from an assessed recommendation', async () => {
       mockPrisma.recommendation.findUnique.mockResolvedValue(mockRecommendation);
       mockPrisma.decisionMemory.upsert.mockResolvedValue(mockMemory);
+      mockMemoryService.createMemory.mockResolvedValue({} as any);
 
       const result = await service.createFromAssessment('rec-uuid-1');
 
       expect(mockPrisma.recommendation.findUnique).toHaveBeenCalledWith({
         where: { id: 'rec-uuid-1' },
       });
+      expect(mockMemoryService.createMemory).toHaveBeenCalledWith(
+        expect.objectContaining({
+          agentType: 'PLAN',
+          taskType: 'RECOMMENDATION_ASSESSMENT',
+          outcome: 'SUCCESS',
+          success: true,
+          decision: 'BullMQ',
+          sourceExecutionId: 'rec-uuid-1',
+        }),
+      );
       expect(mockPrisma.decisionMemory.upsert).toHaveBeenCalled();
       expect(result).toEqual(mockMemory);
     });
@@ -96,7 +121,7 @@ describe('DecisionMemoryService', () => {
       ).rejects.toThrow('Recommendation nonexistent not found');
     });
 
-    it('should return null for ABANDONED outcomes', async () => {
+    it('should return null for ABANDONED outcomes (no writes)', async () => {
       mockPrisma.recommendation.findUnique.mockResolvedValue({
         ...mockRecommendation,
         finalOutcome: 'ABANDONED',
@@ -105,6 +130,7 @@ describe('DecisionMemoryService', () => {
       const result = await service.createFromAssessment('rec-uuid-1');
 
       expect(result).toBeNull();
+      expect(mockMemoryService.createMemory).not.toHaveBeenCalled();
       expect(mockPrisma.decisionMemory.upsert).not.toHaveBeenCalled();
     });
 

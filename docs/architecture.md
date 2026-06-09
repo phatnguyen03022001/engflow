@@ -3,7 +3,7 @@
 # Architecture v1.0
 
 **Status:** Active
-**Last Updated:** 2026-06-07
+**Last Updated:** 2026-06-09
 
 ---
 
@@ -26,6 +26,17 @@
 Policy Management, Compliance, Decision Records (ADRs).
 Source of truth for all rules and standards.
 
+**Rules:**
+- Constitution (`docs/constitution.md`)
+- ADRs (`docs/decisions/`)
+- System Contracts (`.kilo/rules/system/contracts/`)
+- Agent Rules (`.kilo/rules/agents/`)
+- Domain Rules (`.kilo/rules/domain/`)
+- Quality Rules (`.kilo/rules/quality/`)
+- Execution Rules (`.kilo/rules/execution/`)
+- Performance Rules (`.kilo/rules/performance/`)
+- Lifecycle Validator (`.kilo/validate/lifecycle-validator.sh`)
+
 ### Layer 2 — Knowledge
 Knowledge Graph, Repository Knowledge, Project Knowledge, Pattern Library.
 Semantic understanding of the codebase and domain.
@@ -47,16 +58,18 @@ Plan, Architect, PreVerify, Coder, PostVerify.
 Core engineering workflow.
 
 ### Layer 7 — Reliability
-Drift Prevention, Repair System, Harness.
+Drift Prevention, Drift Detection (ADR-013), Repair System, Harness (ADR-003).
+Agent evaluation, metric computation, execution trace analysis.
 System health and consistency.
 
 ### Layer 8 — Observability
-Telemetry, Analytics, Cost Intelligence.
-Visibility into system behavior.
+Telemetry, Cost Intelligence (via L9 Model Registry).
+Analytics merged into evaluation/ module (ADR-014).
+Execution trace storage, agent metric API, pipeline visibility.
 
 ### Layer 9 — Model Intelligence
-Model Registry, Model Routing, Fallback Strategy, Model Evaluation.
-AI model management.
+Model Registry, Model Routing, Fallback Strategy, Model Evaluation, Cost Tracking.
+AI model management via `model-registry/` module (ADR-010).
 
 ### Layer 10 — Platform
 Autonomous Engineering Platform, Self-* Capabilities.
@@ -69,13 +82,14 @@ Orchestration of all layers.
 ### Module Structure
 ```
 src/
-├── prisma/         # Database access layer
-├── auth/           # Authentication and authorization
-├── user/           # User management
-├── learning/       # Learning modules (courses, lessons, exercises)
-├── progress/       # Progress tracking and analytics
-├── admin/          # Admin dashboard
-└── shared/         # Shared utilities and types
+├── shared/         # Shared utilities and types               ✅ active
+├── auth/           # Authentication and authorization         ✅ active
+├── user/           # User management                          ✅ active
+├── learning/       # Learning modules (courses, lessons, exercises) ✅ active
+├── recommendation/ # Recommendation registry (ADR-002)        ✅ active
+├── evaluation/     # Agent evaluation harness (ADR-003)       ✅ active
+├── memory/         # Agent memory and context retrieval       ✅ active
+└── model-registry/ # Model intelligence (ADR-010)             ✅ active
 ```
 
 ### Layer Pattern

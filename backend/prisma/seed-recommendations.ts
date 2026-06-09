@@ -102,48 +102,109 @@ async function main() {
   }
 
   // ─── Create checkpoints for ASSESSED recommendations ───
-  // DecisionMemory.createFromAssessment is triggered via checkpoint assessment completion.
-  // We'll insert checkpoints directly so recalculate picks them up.
+  // Creates all three checkpoints (30D, 90D, 180D) with scheduleAt set relative
+  // to assessedAt for realistic historical timestamps.
   console.log('\n📋 Creating checkpoints for ASSESSED recommendations...');
 
   const assessedRecs = await prisma.recommendation.findMany({
     where: { trackingStatus: 'ASSESSED', finalOutcome: { not: null } },
   });
 
-  for (const rec of assessedRecs) {
-    const checkpoint = await prisma.checkpoint.upsert({
-      where: {
-        recommendationId_checkpoint: {
-          recommendationId: rec.id,
-          checkpoint: '30D',
-        },
-      },
-      update: {},
-      create: {
-        recommendationId: rec.id,
-        checkpoint: '30D',
-        evaluator: 'seed-script',
-        evidenceSources: ['Code review', 'Test results'],
-        wasImplemented: rec.finalOutcome !== 'ABANDONED',
-        implementedOption: rec.recommendedOption,
-        implementationFaith: rec.finalOutcome === 'SUCCESS' ? 'EXACT' : 'ADAPTED',
-        problemSolved: rec.finalOutcome !== 'FAILURE',
-        solutionScore: rec.finalOutcome === 'SUCCESS' ? 5 : rec.finalOutcome === 'MIXED' ? 3 : 1,
-        performanceImpact: rec.finalOutcome === 'SUCCESS' ? 'IMPROVED' : 'NEUTRAL',
-        teamSatisfaction: rec.finalOutcome === 'SUCCESS' ? 'SATISFIED' : 'NEUTRAL',
-        riskAssessmentAcc: rec.finalOutcome === 'SUCCESS' ? 4 : 2,
-        forecastAccurate: rec.finalOutcome !== 'FAILURE',
-        timelineAccurate: rec.finalOutcome !== 'FAILURE',
-        checkpointVerdict: rec.finalOutcome === 'SUCCESS' ? 'ON_TRACK' : rec.finalOutcome === 'MIXED' ? 'CONCERN' : 'FAILED',
-        verdictConfidence: 'HIGH',
-        notes: `Seed checkpoint for ${rec.recId}`,
-        scheduleAt: new Date(),
-        completedAt: new Date(),
-        evaluatedAt: new Date(),
-      },
-    });
+  const checkpointPeriods = ['30D', '90D', '180D'] as const;
+  const periodDays: Record<string, number> = { '30D': 30, '90D': 90, '180D': 180 };
 
-    console.log(`  📌 Checkpoint 30D created for ${rec.recId}`);
+  for (const rec of assessedRecs) {
+    const assessedAt = rec.assessedAt ?? new Date();
+
+    for (const period of checkpointPeriods) {
+      const daysOffset = periodDays[period];
+      const scheduleAt = new Date(assessedAt.getTime() - daysOffset * 24 * 60 * 60 * 1000);
+
+      await prisma.checkpoint.upsert({
+        where: {
+          recommendationId_checkpoint: {
+            recommendationId: rec.id,
+            checkpoint: period,
+          },
+        },
+        update: {},
+        create: {
+          recommendationId: rec.id,
+          checkpoint: period,
+          evaluator: 'seed-script',
+          evidenceSources: ['Code review', 'Test results'],
+          wasImplemented: rec.finalOutcome !== 'ABANDONED',
+          implementedOption: rec.recommendedOption,
+          implementationFaith: rec.finalOutcome === 'SUCCESS' ? 'EXACT' : 'ADAPTED',
+          problemSolved: rec.finalOutcome !== 'FAILURE',
+          solutionScore: rec.finalOutcome === 'SUCCESS' ? 5 : rec.finalOutcome === 'MIXED' ? 3 : 1,
+          performanceImpact: rec.finalOutcome === 'SUCCESS' ? 'IMPROVED' : 'NEUTRAL',
+          teamSatisfaction: rec.finalOutcome === 'SUCCESS' ? 'SATISFIED' : 'NEUTRAL',
+          riskAssessmentAcc: rec.finalOutcome === 'SUCCESS' ? 4 : 2,
+          forecastAccurate: rec.finalOutcome !== 'FAILURE',
+          timelineAccurate: rec.finalOutcome !== 'FAILURE',
+          checkpointVerdict: rec.finalOutcome === 'SUCCESS' ? 'ON_TRACK' : rec.finalOutcome === 'MIXED' ? 'CONCERN' : 'FAILED',
+          verdictConfidence: 'HIGH',
+          notes: `Seed checkpoint ${period} for ${rec.recId}`,
+          scheduleAt,
+          completedAt: new Date(),
+          evaluatedAt: new Date(),
+        },
+      });
+
+      console.log(`  📌 Checkpoint ${period} created for ${rec.recId}`);
+    }
+  }
+
+  // ─── Create checkpoints for IN_PROGRESS recommendations ───
+  // These simulate recently started implementations with only the 30D checkpoint
+  // evaluated (ON_TRACK), while 90D and 180D are still pending.
+  console.log('\n📋 Creating checkpoints for IN_PROGRESS recommendations...');
+
+  const inProgressRecs = await prisma.recommendation.findMany({
+    where: { trackingStatus: 'IN_PROGRESS' },
+  });
+
+  for (const rec of inProgressRecs) {
+    for (const period of checkpointPeriods) {
+      const daysOffset = periodDays[period];
+      const scheduleAt = new Date(Date.now() + daysOffset * 24 * 60 * 60 * 1000);
+      const is30d = period === '30D';
+
+      await prisma.checkpoint.upsert({
+        where: {
+          recommendationId_checkpoint: {
+            recommendationId: rec.id,
+            checkpoint: period,
+          },
+        },
+        update: {},
+        create: {
+          recommendationId: rec.id,
+          checkpoint: period,
+          evaluator: 'seed-script',
+          evidenceSources: is30d ? ['Code review', 'Test results'] : [],
+          wasImplemented: is30d ? true : undefined,
+          implementedOption: is30d ? rec.recommendedOption : undefined,
+          implementationFaith: is30d ? 'EXACT' : undefined,
+          problemSolved: is30d ? true : undefined,
+          solutionScore: is30d ? 4 : undefined,
+          performanceImpact: is30d ? 'IMPROVED' : undefined,
+          teamSatisfaction: is30d ? 'SATISFIED' : undefined,
+          riskAssessmentAcc: is30d ? 4 : undefined,
+          forecastAccurate: is30d ? true : undefined,
+          timelineAccurate: is30d ? true : undefined,
+          checkpointVerdict: is30d ? 'ON_TRACK' : undefined,
+          verdictConfidence: is30d ? 'HIGH' : undefined,
+          notes: `Seed checkpoint ${period} for ${rec.recId}`,
+          scheduleAt,
+          evaluatedAt: is30d ? new Date() : null,
+          completedAt: is30d ? new Date() : null,
+        },
+      });
+
+      console.log(`  📌 Checkpoint ${period} created for ${rec.recId}${is30d ? ' (evaluated)' : ' (pending)'}`);
+    }
   }
 
   // ─── Manually populate decision_memories from assessed recommendations ───

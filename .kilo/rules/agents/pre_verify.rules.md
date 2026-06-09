@@ -1,5 +1,5 @@
-
 /* @lifecycle ACTIVE — Pre-Verify Agent Rules: Gate Validation Before CODE Execution */
+/* @tags all */
 
 # Pre-Verify Agent Rules
 
@@ -39,7 +39,7 @@ Execution plan (from Planner) + optional architecture analysis (from Architect)
 - Are there hidden complexities?
 - Are fallback strategies defined?
 
-### 3.6 Lifecycle Compliance (ADR-008)
+### 3.6 Lifecycle Compliance ([ADR-008](../../../docs/decisions/008-lifecycle-declarations.md))
 - Does the plan identify all new files?
 - Are lifecycle states assigned to each file?
 

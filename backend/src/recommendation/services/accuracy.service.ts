@@ -4,6 +4,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { AccuracyMetrics } from '../interfaces/trust-score.interface';
 import { FinalOutcome } from '../interfaces/recommendation.interface';
+import { getConfidenceInterval } from '../../shared/utils/confidence-interval.util';
 
 @Injectable()
 export class AccuracyService {
@@ -40,7 +41,7 @@ export class AccuracyService {
     const implementationRate = await this.computeImplementationRate();
     const trend = await this.computeTrend();
 
-    const ci = this.computeConfidenceInterval(
+    const ci = getConfidenceInterval(
       overallAccuracy ?? 0,
       totalAssessed,
     );
@@ -360,23 +361,6 @@ export class AccuracyService {
     return {
       direction,
       value: Math.round(trendValue * 100),
-    };
-  }
-
-  private computeConfidenceInterval(
-    accuracy: number,
-    sampleSize: number,
-  ): { lower: number; upper: number; width: number } {
-    if (sampleSize < 1) {
-      return { lower: 0, upper: 100, width: 100 };
-    }
-    const p = accuracy;
-    const z = 1.96;
-    const margin = z * Math.sqrt((p * (1 - p)) / sampleSize);
-    return {
-      lower: Math.max(0, Math.round((p - margin) * 100)),
-      upper: Math.min(100, Math.round((p + margin) * 100)),
-      width: Math.round(margin * 100),
     };
   }
 

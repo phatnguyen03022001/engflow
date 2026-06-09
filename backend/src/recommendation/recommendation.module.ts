@@ -2,6 +2,7 @@
 
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
+import { MemoryModule } from '../memory/memory.module';
 import { RecommendationController } from './recommendation.controller';
 import { RecommendationService } from './services/recommendation.service';
 import { CheckpointService } from './services/checkpoint.service';
@@ -14,7 +15,7 @@ import { CheckpointScheduler } from './schedulers/checkpoint.scheduler';
 import { AccuracyScheduler } from './schedulers/accuracy.scheduler';
 
 @Module({
-  imports: [ScheduleModule],
+  imports: [ScheduleModule, MemoryModule],
   controllers: [RecommendationController],
   providers: [
     RecommendationService,

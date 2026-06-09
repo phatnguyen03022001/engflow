@@ -1,0 +1,33 @@
+#!/bin/bash
+/* @lifecycle ACTIVE — Agent memory context helper for agents */
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+ENV_FILE="$SCRIPT_DIR/backend/.env"
+KEY="agent-dev-key"
+
+if [ -f "$ENV_FILE" ]; then
+  LINE=$(grep AGENT_API_KEY "$ENV_FILE" | head -1)
+  if [ -n "$LINE" ]; then KEY="${LINE#*=}"; fi
+fi
+
+AGENT_TYPE=""; TASK_TYPE=""; LIMIT=5; INCLUDE_FAILED="false"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --agent-type) AGENT_TYPE="$2"; shift 2 ;;
+    --task-type) TASK_TYPE="$2"; shift 2 ;;
+    --limit) LIMIT="$2"; shift 2 ;;
+    --include-failed) INCLUDE_FAILED="$2"; shift 2 ;;
+    *) echo "Unknown: $1"; exit 1 ;;
+  esac
+done
+
+URL="http://localhost:3001/api/v1/memories/agent-context?agentType=$AGENT_TYPE&taskType=$TASK_TYPE&limit=$LIMIT&includeFailed=$INCLUDE_FAILED"
+RESPONSE=$(curl -s -w "\n%{http_code}" -H "X-AGENT-API-KEY: $KEY" "$URL")
+HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [ "$HTTP_CODE" = "401" ]; then echo "⚠️ Authentication failed — check AGENT_API_KEY"; exit 1; fi
+if [ -z "$BODY" ]; then echo "⚠️ Memory backend not available (is docker compose up running?)"; exit 1; fi
+
+echo "$BODY"

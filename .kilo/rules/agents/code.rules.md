@@ -1,4 +1,5 @@
 /* @lifecycle ACTIVE — Code Agent Rules: Primary Implementation Agent */
+/* @tags backend, coding */
 
 # Code Agent Rules
 
@@ -42,7 +43,7 @@ Primary implementation agent. Feature development, testing, refactoring, bug fix
 - Validate edge cases and error handling
 - Never claim tests/build/lint passed unless actually executed
 
-## 6. Lifecycle Obligation (ADR-008)
+## 6. Lifecycle Obligation ([ADR-008](../../../docs/decisions/008-lifecycle-declarations.md))
 
 Every new file MUST include a lifecycle declaration as the first line comment.
 
