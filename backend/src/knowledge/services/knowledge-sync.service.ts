@@ -2,11 +2,10 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { NodeType, EdgeType } from '@prisma/client';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { SyncResult } from '../interfaces/knowledge.interface';
-import { CreateNodeDto } from '../dto/create-node.dto';
-import { CreateEdgeDto } from '../dto/create-edge.dto';
 
 @Injectable()
 export class KnowledgeSyncService {
@@ -22,8 +21,12 @@ export class KnowledgeSyncService {
     const result: SyncResult = { nodesCreated: 0, edgesCreated: 0, errors: [] };
 
     try {
-      // Phase 1 (MVP): seed starter nodes and edges
-      await this.seedStarterData(result);
+      // 1. Scan backend/src/ directories → ARCHITECTURE nodes
+      await this.scanSourceModules(result);
+      // 2. Scan docs/decisions/ → DECISION nodes
+      await this.scanDecisionFiles(result);
+      // 3. Scan schema.prisma → CODE nodes
+      await this.scanPrismaModels(result);
     } catch (error) {
       this.logger.error(`Sync failed: ${(error as Error).message}`);
       result.errors.push((error as Error).message);
@@ -35,275 +38,126 @@ export class KnowledgeSyncService {
     return result;
   }
 
-  private async seedStarterData(result: SyncResult): Promise<void> {
-    const starterNodes: CreateNodeDto[] = [
-      {
-        nodeId: 'sys-overview',
-        type: NodeType.ARCHITECTURE,
-        label: 'System Overview',
-        description: 'Floweng — Modular Monolith English Learning Platform',
-        module: 'core',
-      },
-      {
-        nodeId: 'arch-modular-monolith',
-        type: NodeType.ARCHITECTURE,
-        label: 'Modular Monolith Pattern',
-        description: 'Single deployable unit with modular code organization',
-        module: 'core',
-      },
-      {
-        nodeId: 'adr-001',
-        type: NodeType.DECISION,
-        label: 'ADR-001: Reuse-First Governance',
-        description: 'Reuse-first governance model for the AI Software Factory',
-        sourceFile: 'docs/decisions/001-reuse-first-governance.md',
-      },
-      {
-        nodeId: 'adr-002',
-        type: NodeType.DECISION,
-        label: 'ADR-002: Recommendation Registry',
-        description: 'Structured recommendation format with confidence scoring',
-        sourceFile: 'docs/decisions/002-recommendation-registry.md',
-      },
-      {
-        nodeId: 'adr-003',
-        type: NodeType.DECISION,
-        label: 'ADR-003: Agent Evaluation Harness',
-        description: 'Execution trace and metric collection for agent evaluation',
-        sourceFile: 'docs/decisions/003-agent-evaluation-harness.md',
-      },
-      {
-        nodeId: 'adr-008',
-        type: NodeType.DECISION,
-        label: 'ADR-008: Lifecycle Declarations',
-        description: 'Lifecycle metadata on every source file',
-        sourceFile: 'docs/decisions/008-lifecycle-declarations.md',
-      },
-      {
-        nodeId: 'adr-009',
-        type: NodeType.DECISION,
-        label: 'ADR-009: UUID v7',
-        description: 'UUID v7 for all primary keys',
-        sourceFile: 'docs/decisions/009-uuid7.md',
-      },
-      {
-        nodeId: 'adr-010',
-        type: NodeType.DECISION,
-        label: 'ADR-010: Model Registry',
-        description: 'Model registry for AI model management',
-        sourceFile: 'docs/decisions/010-model-registry.md',
-      },
-      {
-        nodeId: 'adr-011',
-        type: NodeType.DECISION,
-        label: 'ADR-011: Knowledge Graph',
-        description: 'Cross-layer traceability via Knowledge Graph',
-        sourceFile: 'docs/decisions/011-knowledge-graph.md',
-      },
-      {
-        nodeId: 'mod-auth',
-        type: NodeType.CODE,
-        label: 'Auth Module',
-        description: 'Authentication and authorization module',
-        module: 'auth',
-        sourceFile: 'backend/src/auth/',
-      },
-      {
-        nodeId: 'mod-user',
-        type: NodeType.CODE,
-        label: 'User Module',
-        description: 'User management module',
-        module: 'user',
-        sourceFile: 'backend/src/user/',
-      },
-      {
-        nodeId: 'mod-learning',
-        type: NodeType.CODE,
-        label: 'Learning Module',
-        description: 'Learning content module (lessons, exercises)',
-        module: 'learning',
-        sourceFile: 'backend/src/learning/',
-      },
-      {
-        nodeId: 'mod-recommendation',
-        type: NodeType.CODE,
-        label: 'Recommendation Module',
-        description: 'Recommendation registry module',
-        module: 'recommendation',
-        sourceFile: 'backend/src/recommendation/',
-      },
-      {
-        nodeId: 'mod-evaluation',
-        type: NodeType.CODE,
-        label: 'Evaluation Module',
-        description: 'Agent evaluation harness module',
-        module: 'evaluation',
-        sourceFile: 'backend/src/evaluation/',
-      },
-      {
-        nodeId: 'mod-memory',
-        type: NodeType.CODE,
-        label: 'Memory Module',
-        description: 'Agent memory and context retrieval module',
-        module: 'memory',
-        sourceFile: 'backend/src/memory/',
-      },
-      {
-        nodeId: 'mod-model-registry',
-        type: NodeType.CODE,
-        label: 'Model Registry Module',
-        description: 'Model intelligence module',
-        module: 'model-registry',
-        sourceFile: 'backend/src/model-registry/',
-      },
-    ];
-
-    const starterEdges: CreateEdgeDto[] = [
-      {
-        edgeId: 'e-001',
-        sourceNodeId: 'sys-overview',
-        targetNodeId: 'arch-modular-monolith',
-        type: EdgeType.REFERENCES,
-        description: 'System overview references monolith pattern',
-      },
-      {
-        edgeId: 'e-002',
-        sourceNodeId: 'sys-overview',
-        targetNodeId: 'adr-011',
-        type: EdgeType.REFERENCES,
-        description: 'System overview references knowledge graph ADR',
-      },
-      {
-        edgeId: 'e-003',
-        sourceNodeId: 'adr-001',
-        targetNodeId: 'mod-auth',
-        type: EdgeType.DECIDES,
-        description: 'Reuse-first governance applies to auth module',
-      },
-      {
-        edgeId: 'e-004',
-        sourceNodeId: 'adr-001',
-        targetNodeId: 'mod-user',
-        type: EdgeType.DECIDES,
-        description: 'Reuse-first governance applies to user module',
-      },
-      {
-        edgeId: 'e-005',
-        sourceNodeId: 'adr-001',
-        targetNodeId: 'mod-learning',
-        type: EdgeType.DECIDES,
-        description: 'Reuse-first governance applies to learning module',
-      },
-      {
-        edgeId: 'e-006',
-        sourceNodeId: 'adr-002',
-        targetNodeId: 'mod-recommendation',
-        type: EdgeType.DECIDES,
-        description: 'Recommendation registry ADR implements recommendation module',
-      },
-      {
-        edgeId: 'e-007',
-        sourceNodeId: 'adr-003',
-        targetNodeId: 'mod-evaluation',
-        type: EdgeType.DECIDES,
-        description: 'Evaluation harness ADR implements evaluation module',
-      },
-      {
-        edgeId: 'e-008',
-        sourceNodeId: 'adr-008',
-        targetNodeId: 'adr-011',
-        type: EdgeType.REFERENCES,
-        description: 'Lifecycle declarations referenced by knowledge graph ADR',
-      },
-      {
-        edgeId: 'e-009',
-        sourceNodeId: 'adr-010',
-        targetNodeId: 'mod-model-registry',
-        type: EdgeType.DECIDES,
-        description: 'Model registry ADR implements model-registry module',
-      },
-      {
-        edgeId: 'e-010',
-        sourceNodeId: 'mod-evaluation',
-        targetNodeId: 'mod-recommendation',
-        type: EdgeType.DEPENDS_ON,
-        description: 'Evaluation module depends on recommendation module',
-      },
-      {
-        edgeId: 'e-011',
-        sourceNodeId: 'mod-memory',
-        targetNodeId: 'mod-recommendation',
-        type: EdgeType.DEPENDS_ON,
-        description: 'Memory module depends on recommendation module',
-      },
-      {
-        edgeId: 'e-012',
-        sourceNodeId: 'adr-009',
-        targetNodeId: 'adr-011',
-        type: EdgeType.REFERENCES,
-        description: 'UUID v7 referenced by knowledge graph ADR',
-      },
-    ];
-
-    for (const node of starterNodes) {
-      try {
-        await this.prisma.knowledgeNode.create({
-          data: {
-            nodeId: node.nodeId,
-            type: node.type as NodeType,
-            label: node.label,
-            description: node.description ?? null,
-            sourceFile: node.sourceFile ?? null,
-            module: node.module ?? null,
-          },
-        });
-        result.nodesCreated++;
-      } catch (err) {
-        // Skip if node already exists (idempotent sync)
-        if ((err as any)?.code !== 'P2002') {
-          result.errors.push(
-            `Failed to create node "${node.nodeId}": ${(err as Error).message}`,
-          );
-        }
-      }
+  private async scanSourceModules(result: SyncResult): Promise<void> {
+    const srcPath = path.resolve('backend/src');
+    let entries: string[];
+    try {
+      entries = await fs.readdir(srcPath);
+    } catch (err) {
+      this.logger.warn(`Cannot read source directory: ${srcPath} (${(err as Error).message})`);
+      return;
     }
 
-    // Create edges: need to resolve Prisma IDs from nodeIds
-    const allNodes = await this.prisma.knowledgeNode.findMany({
-      select: { id: true, nodeId: true },
+    for (const entry of entries) {
+      const fullPath = path.join(srcPath, entry);
+      try {
+        const stat = await fs.stat(fullPath);
+        if (stat.isDirectory()) {
+          const nodeId = `mod-${entry}`;
+          const created = await this.upsertNode({
+            nodeId,
+            type: 'ARCHITECTURE',
+            label: `${entry.charAt(0).toUpperCase() + entry.slice(1)} Module`,
+            module: entry,
+            sourceFile: `backend/src/${entry}/`,
+          });
+          if (created) result.nodesCreated++;
+        }
+      } catch {
+        // skip entries that can't be stat'd
+      }
+    }
+  }
+
+  private async scanDecisionFiles(result: SyncResult): Promise<void> {
+    const decisionsPath = path.resolve('docs/decisions');
+    let files: string[];
+    try {
+      files = await fs.readdir(decisionsPath);
+    } catch (err) {
+      this.logger.warn(`Cannot read decisions directory: ${decisionsPath} (${(err as Error).message})`);
+      return;
+    }
+
+    for (const file of files) {
+      if (file.endsWith('.md') && !file.includes('index')) {
+        const nodeId = file.replace('.md', '');
+        const created = await this.upsertNode({
+          nodeId,
+          type: 'DECISION',
+          label: file,
+          module: 'core',
+          sourceFile: `docs/decisions/${file}`,
+        });
+        if (created) result.nodesCreated++;
+      }
+    }
+  }
+
+  private async scanPrismaModels(result: SyncResult): Promise<void> {
+    const schemaPath = path.resolve('backend/prisma/schema.prisma');
+    let schema: string;
+    try {
+      schema = await fs.readFile(schemaPath, 'utf-8');
+    } catch (err) {
+      this.logger.warn(`Cannot read schema file: ${schemaPath} (${(err as Error).message})`);
+      return;
+    }
+
+    const modelRegex = /^model (\w+) \{/gm;
+    let match: RegExpExecArray | null;
+    while ((match = modelRegex.exec(schema)) !== null) {
+      const modelName = match[1];
+      const nodeId = `model:${modelName}`;
+      const created = await this.upsertNode({
+        nodeId,
+        type: 'CODE',
+        label: modelName,
+        module: 'prisma',
+        sourceFile: 'backend/prisma/schema.prisma',
+      });
+      if (created) result.nodesCreated++;
+    }
+  }
+
+  /**
+   * Upsert a knowledge node: create if not exists, update if exists.
+   * Returns true if a new node was created, false if updated.
+   */
+  private async upsertNode(data: {
+    nodeId: string;
+    type: string;
+    label: string;
+    module?: string;
+    sourceFile?: string;
+  }): Promise<boolean> {
+    const existing = await this.prisma.knowledgeNode.findUnique({
+      where: { nodeId: data.nodeId },
     });
-    const nodeIdToPrismaId = new Map(allNodes.map((n) => [n.nodeId, n.id]));
 
-    for (const edge of starterEdges) {
-      const sourcePrismaId = nodeIdToPrismaId.get(edge.sourceNodeId);
-      const targetPrismaId = nodeIdToPrismaId.get(edge.targetNodeId);
-
-      if (!sourcePrismaId || !targetPrismaId) {
-        result.errors.push(
-          `Cannot create edge "${edge.edgeId}": source or target node not resolved`,
-        );
-        continue;
-      }
-
-      try {
-        await this.prisma.knowledgeEdge.create({
-          data: {
-            edgeId: edge.edgeId,
-            sourceNodeId: sourcePrismaId,
-            targetNodeId: targetPrismaId,
-            type: edge.type as EdgeType,
-            weight: edge.weight ?? 1.0,
-            description: edge.description ?? null,
-          },
-        });
-        result.edgesCreated++;
-      } catch (err) {
-        if ((err as any)?.code !== 'P2002') {
-          result.errors.push(
-            `Failed to create edge "${edge.edgeId}": ${(err as Error).message}`,
-          );
-        }
-      }
+    if (existing) {
+      await this.prisma.knowledgeNode.update({
+        where: { nodeId: data.nodeId },
+        data: {
+          type: data.type as any,
+          label: data.label,
+          module: data.module ?? null,
+          sourceFile: data.sourceFile ?? null,
+        },
+      });
+      return false;
     }
+
+    await this.prisma.knowledgeNode.create({
+      data: {
+        nodeId: data.nodeId,
+        type: data.type as any,
+        label: data.label,
+        module: data.module ?? null,
+        sourceFile: data.sourceFile ?? null,
+        isActive: true,
+      },
+    });
+    return true;
   }
 }

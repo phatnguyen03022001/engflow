@@ -48,6 +48,9 @@ describe('SelfHealService', () => {
         findMany: jest.fn(),
         update: jest.fn(),
       },
+      driftEvent: {
+        findUnique: jest.fn(),
+      },
     };
 
     metricService = {
@@ -119,6 +122,84 @@ describe('SelfHealService', () => {
       await expect(
         service.retryFailedExecution('nonexistent'),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('healDrift', () => {
+    const mockDriftEvent = {
+      id: 'drift-001',
+      sourcePath: 'src/auth/login.ts',
+      isResolved: false,
+      resolvedAt: null,
+      severity: 'CRITICAL',
+      title: 'Auth drift',
+      description: 'Auth module drift detected',
+      detectorType: 'STRUCTURE',
+      expectedValue: null,
+      actualValue: null,
+      detectedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it('should retry executions related to a drift event', async () => {
+      prisma.driftEvent.findUnique.mockResolvedValue(mockDriftEvent);
+      prisma.agentExecution.findMany.mockResolvedValue([
+        baseExecution({ executionId: 'exec-001', requestSummary: 'Fix login/auth issue' }),
+        baseExecution({ executionId: 'exec-002', requestSummary: 'Update login.ts config' }),
+      ]);
+      prisma.agentExecution.findUnique
+        .mockResolvedValueOnce(baseExecution({ executionId: 'exec-001', retryCount: 0 }))
+        .mockResolvedValueOnce(baseExecution({ executionId: 'exec-002', retryCount: 0 }));
+      prisma.agentExecution.update.mockResolvedValue(
+        baseExecution({ retryCount: 1, finalOutcome: 'RETRYING' }),
+      );
+
+      const result = await service.healDrift('drift-001');
+
+      expect(result.retried).toBe(2);
+      expect(prisma.driftEvent.findUnique).toHaveBeenCalledWith({
+        where: { id: 'drift-001' },
+      });
+      expect(prisma.agentExecution.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            finalOutcome: 'FAILED',
+            retryCount: { lt: 2 },
+          }),
+        }),
+      );
+    });
+
+    it('should skip if drift event already resolved', async () => {
+      prisma.driftEvent.findUnique.mockResolvedValue({
+        ...mockDriftEvent,
+        isResolved: true,
+        resolvedAt: new Date(),
+      });
+
+      const result = await service.healDrift('drift-001');
+
+      expect(result.retried).toBe(0);
+      expect(prisma.agentExecution.findMany).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when drift event does not exist', async () => {
+      prisma.driftEvent.findUnique.mockResolvedValue(null);
+
+      await expect(service.healDrift('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prisma.agentExecution.findMany).not.toHaveBeenCalled();
+    });
+
+    it('should return 0 retried when no matching failed executions', async () => {
+      prisma.driftEvent.findUnique.mockResolvedValue(mockDriftEvent);
+      prisma.agentExecution.findMany.mockResolvedValue([]);
+
+      const result = await service.healDrift('drift-001');
+
+      expect(result.retried).toBe(0);
     });
   });
 

@@ -107,6 +107,16 @@ export class KnowledgeController {
     return this.graphService.queryImpact(nodeId, parsedDepth);
   }
 
+  @Get('graph/impact')
+  @ApiOperation({ summary: 'Impact analysis - find all affected nodes by depth' })
+  queryImpactByDepth(
+    @Query('nodeId') nodeId: string,
+    @Query('depth') depth?: string,
+  ) {
+    const parsedDepth = depth ? parseInt(depth, 10) : 3;
+    return this.graphService.queryImpact(nodeId, parsedDepth);
+  }
+
   @Get('graph/trace')
   @ApiOperation({ summary: 'Path trace between two nodes' })
   queryPath(

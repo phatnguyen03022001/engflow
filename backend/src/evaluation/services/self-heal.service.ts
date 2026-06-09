@@ -16,6 +16,40 @@ export class SelfHealService {
   ) {}
 
   /**
+   * Retry failed executions related to a drift event.
+   * Finds FAILED agent executions whose requestSummary matches the drift's sourcePath
+   * and retries them if they haven't exceeded max retries.
+   */
+  async healDrift(driftEventId: string): Promise<{ retried: number }> {
+    const event = await this.prisma.driftEvent.findUnique({
+      where: { id: driftEventId },
+    });
+    if (!event) {
+      throw new NotFoundException('Drift event not found');
+    }
+    if (event.isResolved) return { retried: 0 };
+
+    // Find FAILED executions whose requestSummary contains a segment from sourcePath
+    const sourceFragment = event.sourcePath ? event.sourcePath.split('/').pop() : undefined;
+    const related = await this.prisma.agentExecution.findMany({
+      where: {
+        finalOutcome: 'FAILED',
+        retryCount: { lt: MAX_RETRIES },
+        ...(sourceFragment && {
+          requestSummary: { contains: sourceFragment },
+        }),
+      },
+    });
+
+    let retried = 0;
+    for (const exec of related) {
+      const r = await this.retryFailedExecution(exec.executionId);
+      if (r.retried) retried++;
+    }
+    return { retried };
+  }
+
+  /**
    * Retry a single failed execution.
    * Only executions with finalOutcome === 'FAILED' and retryCount < MAX_RETRIES qualify.
    * Increments retryCount and triggers the post-commit hook.

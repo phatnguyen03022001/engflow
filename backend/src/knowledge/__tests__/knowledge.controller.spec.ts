@@ -267,6 +267,30 @@ describe('KnowledgeController', () => {
 
   // ─── Sync Endpoint ───────────────────────────────────────────────────────
 
+  // ─── Impact Analysis Endpoint ─────────────────────────────────────────────
+
+  describe('queryImpactByDepth', () => {
+    it('should call graphService.queryImpact with default depth', async () => {
+      const mockResult = { nodes: [] };
+      mockGraphService.queryImpact.mockResolvedValue(mockResult);
+
+      const result = await controller.queryImpactByDepth('test-node', undefined);
+
+      expect(graphService.queryImpact).toHaveBeenCalledWith('test-node', 3);
+      expect(result).toEqual(mockResult);
+    });
+
+    it('should call graphService.queryImpact with parsed depth', async () => {
+      mockGraphService.queryImpact.mockResolvedValue({ nodes: [] });
+
+      await controller.queryImpactByDepth('test-node', '5');
+
+      expect(graphService.queryImpact).toHaveBeenCalledWith('test-node', 5);
+    });
+  });
+
+  // ─── Sync Endpoint ─────────────────────────────────────────────────────────
+
   describe('triggerSync', () => {
     it('should call syncService.syncFromFileScan', async () => {
       const syncResult = {
