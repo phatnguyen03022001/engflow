@@ -74,54 +74,8 @@ Default for new source files: ACTIVE
 2. Tests pass
 3. Constitution satisfied
 4. Documentation updated
-5. Runtime Verification passed — build, lint, and test all PASS
-6. Work queue updated
-7. Post-verify passed
-
-### 1.10 Runtime Verification (ADR-017)
-
-Before transitioning to POST_VERIFY, CODE MUST execute runtime verification commands in strict sequential order.
-
-**Execution Order:**
-
-| Step | Command | Failure Behavior |
-|------|---------|------------------|
-| 1 | `npm run build` | Blocks all subsequent checks |
-| 2 | `npm run lint` | Runs only if build passes |
-| 3 | `npx jest --passWithNoTests` | Runs only if lint passes |
-
-**Output Capture Rules:**
-- Capture FULL raw stdout and stderr for each command
-- Do NOT summarize, truncate, or filter the output
-- Capture exit codes (0 = pass, non-zero = fail)
-- Record approximate duration for each command
-
-**Report Format:**
-
-```markdown
-## Runtime Verification Report
-
-| Command | Status | Exit Code | Duration |
-|---------|--------|-----------|----------|
-| `npm run build` | PASS/FAIL | <code> | <seconds>s |
-| `npm run lint` | PASS/FAIL | <code> | <seconds>s |
-| `npx jest --passWithNoTests` | PASS/FAIL | <code> | <seconds>s |
-
-### Build Output
-<full raw stdout+stderr>
-
-### Lint Output
-<full raw stdout+stderr>
-
-### Test Output
-<full raw stdout+stderr>
-```
-
-**Report Delivery:** MUST be included in the transition to POST_VERIFY as part of final handoff output.
-
-**Failure Handling:**
-- If any command fails: DO NOT proceed, fix issue, re-run from step 1
-- If timeout: build >120s, lint >60s, test >300s → treat as FAIL, report "TIMEOUT"
+5. Work queue updated
+6. Post-verify passed
 
 ## 2. Pre-Verify Agent
 
@@ -181,11 +135,11 @@ The Runtime Guard enforces these transitions.
 
 ### 3.1 Role
 
-Quality assurance, spec compliance, and regression checking AFTER code execution. Reviews code output. Never modifies code. Reviews CODE's Runtime Verification Report (ADR-017). Never executes build/lint/test directly.
+Quality assurance, spec compliance, and regression checking AFTER code execution. Performs runtime verification via build/lint/test commands. Never modifies code.
 
 ### 3.2 Input
 
-Code implementation output, CODE's Runtime Verification Report (build/lint/test results), original plan, acceptance criteria
+Code implementation output, original plan, acceptance criteria
 
 ### 3.3 QA Checklist
 
@@ -197,16 +151,30 @@ Code implementation output, CODE's Runtime Verification Report (build/lint/test 
 - **Quality:** Clean and well-structured? Maintainable? No unnecessary abstractions?
 - **Lifecycle Compliance (ADR-008):** New files have valid @lifecycle declaration? State appropriate?
 
-### 3.4 Runtime Verification — Raw Output Audit (ADR-017)
+### 3.4 Runtime Verification
 
-CODE executes `npm run build`, `npm run lint`, and `npx jest --passWithNoTests` in strict sequential order. CODE captures FULL raw stdout+stderr and formats a **Runtime Verification Report**.
+POST_VERIFY SHALL execute `npm run build`, `npm run lint`, and `npx jest --passWithNoTests` in strict sequential order. POST_VERIFY captures FULL raw stdout+stderr and performs a self-audit on the results.
 
-POST_VERIFY SHALL perform a Raw Output Audit on CODE's report:
+**Execution Order:**
+
+| Step | Command | Failure Behavior |
+|------|---------|------------------|
+| 1 | `npm run build` | Blocks all subsequent checks |
+| 2 | `npm run lint` | Runs only if build passes |
+| 3 | `npx jest --passWithNoTests` | Runs only if lint passes |
+
+**Output Capture Rules:**
+- Capture FULL raw stdout and stderr for each command
+- Do NOT summarize, truncate, or filter the output
+- Capture exit codes (0 = pass, non-zero = fail)
+- Record approximate duration for each command
+
+**Self-Audit Checks:**
 
 **Check 1 — Exit Code Audit:**
 - Any non-zero exit code → FAIL verdict
-- "TIMEOUT" in Status column → FAIL verdict
-- Missing report or missing command entries → FLAG (severity: MEDIUM)
+- "TIMEOUT" → FAIL verdict
+- Missing output → FLAG (severity: MEDIUM)
 
 **Check 2 — Pattern Scan:**
 Scan the raw output for failure patterns:
@@ -219,17 +187,16 @@ Scan the raw output for failure patterns:
 - Any `error` level log line
 
 **Check 3 — Cross-Reference:**
-- Cross-check static analysis findings against CODE's reported results
-- If CODE reports "build PASS" but static analysis reveals missing imports → FLAG (HIGH)
-- If CODE reports "test PASS" but static analysis reveals missing test files or skipped tests → FLAG (MEDIUM)
+- Cross-check runtime verification results against static analysis findings
+- If build passes but static analysis reveals missing imports → FLAG (HIGH)
+- If tests pass but static analysis reveals missing test files or skipped tests → FLAG (MEDIUM)
 
 **Gate Integration:**
 
-| Runtime Audit Result | Gate Effect |
-|----------------------|-------------|
+| Runtime Result | Gate Effect |
+|----------------|-------------|
 | All checks pass | Runtime verification supports PASS/FLAG |
 | Any check fails | Runtime verification supports FAIL |
-| Report missing/incomplete | FLAG (MEDIUM); continue static analysis |
 
 ### 3.5 Output Format
 
@@ -301,23 +268,18 @@ Runtime verification passed. <N> low-severity flags.
 ### 3.6 Rules
 
 - Never modify source files — review only (`edit: deny`)
-- Runtime verification results from CODE's report, not from own execution
+- Bash: allow for whitelisted verification commands (build/lint/test)
 - Never make architecture decisions
 - Never create ADRs
 - Be specific: cite exact code locations
 - Map each runtime failure to the Code Agent task that introduced it
 - If uncertain, flag — do not assume
 
-### 3.7 Runtime Verification Sandbox Note
+### 3.7 Runtime Verification Environment
 
-The sandbox isolation defined in ADR-015 §2 is no longer enforced by POST_VERIFY, because POST_VERIFY no longer executes verification commands.
+POST_VERIFY executes verification commands directly on the host. No Docker sandbox is used — the direct execution mode is simpler and has been empirically proven to work without security issues (ADR-018 §5).
 
-CODE runs build/lint/test directly. CODE is expected to:
-- Run from a clean state (dist/ removed before build)
-- Use test database configuration (DATABASE_URL pointing to floweng_test)
-- Capture full raw output for POST_VERIFY review
-
-Timeout contract (enforced by CODE):
+Timeout contract (enforced by POST_VERIFY):
 | Command | Timeout | Action on Exceed |
 |---------|---------|------------------|
 | `npm run build` | 120 seconds | Treat as FAIL, report TIMEOUT |
@@ -328,9 +290,9 @@ Timeout contract (enforced by CODE):
 
 | Decision | Action | Condition |
 |----------|--------|-----------|
-| PASS | Route to COMMIT | Raw Output Audit passes + static analysis clean |
-| FLAG | Route to COMMIT (with documented concerns) | Raw Output Audit passes + non-blocking static flags |
-| FAIL | Route to CODE (retry, max 1) | Raw Output Audit fails OR blocking static issue |
+| PASS | Route to COMMIT | Runtime checks pass + static analysis clean |
+| FLAG | Route to COMMIT (with documented concerns) | Runtime checks pass + non-blocking static flags |
+| FAIL | Route to CODE (retry, max 1) | Runtime check fails OR blocking static issue |
 | BLOCK | Route to ARCH | Security issue, architecture violation, or repeated FAIL > retry limit |
 
 The Runtime Guard enforces these transitions.
