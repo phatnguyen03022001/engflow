@@ -2,7 +2,7 @@
 
 # ADR-010 — Model Intelligence Layer: Registry, Routing, Fallback & Cost Tracking
 
-**Status:** Proposed
+**Status:** Active
 **Created:** 2026-06-09
 **Author:** Architect Agent
 **Supersedes:** None
@@ -146,7 +146,7 @@ backend/src/model-registry/
 
 **Total: ~20 files** (comparable to `recommendation/` at 21, `evaluation/` at 18).
 
-### §4. Fallback Strategy
+### §4. Fallback Strategy *(Amended 2026-06-10 — Architect chain reversed to flash-first per empirical quality evidence; see escalation criteria for pro gating)*
 
 ```
 Model Selection Flow:
@@ -176,8 +176,15 @@ Model Selection Flow:
 | Primary | Secondary | Tertiary | Rationale |
 |---------|-----------|----------|-----------|
 | flash | pro | (error) | Default: flash first, pro on failure |
-| pro | flash | (error) | Architect: pro first, flash as cost fallback |
-| flash | flash (retry) | pro | Retry once before upgrading cost tier |
+| flash | pro | (error) | Architect: flash-first, pro escalation for ADR creation, schema, infra, security, decomposition, cross-cutting decisions |
+| flash | flash (retry) | pro | Retry once on flash failure before escalating to pro |
+
+**Architect Pro escalation triggers (flash→pro only for deep reasoning):**
+
+| Primary | Secondary | Tertiary | Escalation Trigger |
+|---------|-----------|----------|-------------------|
+| flash | flash (retry) | (error) | Routine review, plan revision, convention validation |
+| flash | pro | (error) | ADR creation, schema change, security review, infra change, decomposition |
 
 **Fallback triggers:**
 - HTTP 429 (rate limit) → immediate fallback

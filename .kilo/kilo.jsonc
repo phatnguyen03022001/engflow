@@ -81,7 +81,7 @@
     "architect": {
       "name": "architect",
       "description": "Architect — Architecture governance, ADR creation, risk analysis, security and performance review. Never implement features.",
-      "model": "deepseek/deepseek-v4-pro",
+      "model": "deepseek/deepseek-v4-flash",
       "mode": "primary",
       "color": "#e74c3c",
       "steps": 15,
