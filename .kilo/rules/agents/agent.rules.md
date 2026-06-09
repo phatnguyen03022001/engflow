@@ -64,10 +64,8 @@ Default for new source files: ACTIVE
 
 ### 1.8 Escalation
 
-- Database schema changes → Architect
-- Architecture decisions → Architect
-- Framework changes → Architect
-- Security issues → Architect
+- Simple architecture review, drift detection, plan revision → architect-quick
+- ADR creation, schema changes, migrations, security review, infrastructure changes, service decomposition, framework migration → architect-deep
 - Task ambiguity → Planner
 
 ### 1.9 Definition of Done
