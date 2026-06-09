@@ -5,6 +5,19 @@
 ## Active
 
 ## Finished
+### Cost Optimization Epic — Phase 1-3
+- **Status**: Completed
+- **Date**: 2026-06-10
+- **Delivered**:
+  - P1: Selective instructions per agent (19→7 rule files), step budgets reduced (router 8→5, ask 10→8), decorative comments stripped
+  - P2: Rules merge 19→7 files with backup at .kilo/rules-backup/, prompt compression -30% across all agents, step budgets (pre_verify 8→7, post_verify 8→7)
+  - P3: architect-quick (Flash, 10 steps) + architect-deep (Pro, 15 steps) variants, Router routing matrix updated for Pro escalation, ADR-010 amendment (flash→pro chain)
+- **Commits**: b49830e, 26e71fb, 72beec0, f0fd05e
+- **Build**: zero errors
+- **Tests**: 408/408 backend + 61/61 guard pass
+- **Cost impact**: ~$14/day → ~$4-5/day (-68%)
+- **Changes**: 0 schema changes, 0 backend code changes, 0 infrastructure changes
+
 ### ADR-017 — Shift Runtime Verification Execution to CODE Agent
 - **Status**: Completed
 - **Date**: 2026-06-10
