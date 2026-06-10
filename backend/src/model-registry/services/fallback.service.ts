@@ -1,6 +1,6 @@
 /* @lifecycle ACTIVE — Fallback chain resolution service (ADR-010) */
 
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { ResolvedModel, FallbackStep, ModelTier } from '../interfaces/model-registry.interface';
@@ -157,7 +157,7 @@ export class FallbackService {
 
     // Validate no self-referencing fallback
     if (dto.primaryModelId === dto.fallbackModelId) {
-      throw new Error('A model cannot fall back to itself');
+      throw new BadRequestException('A model cannot fall back to itself');
     }
 
     return this.prisma.fallbackChain.create({

@@ -70,6 +70,8 @@ export interface ExecutionLock {
   locked: boolean;
   timestamp: string; // ISO-8601
   retry_count: RetryCount;
+  /** Captured from Router's LEVEL_X classification. Undefined until Router runs. */
+  routing_level?: string;
 }
 
 /**

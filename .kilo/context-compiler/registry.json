@@ -1,0 +1,3946 @@
+{
+  "files": [
+    {
+      "file": "agents/agent.rules.md",
+      "tags": [
+        "all",
+        "backend",
+        "coding"
+      ],
+      "sections": [
+        {
+          "id": "agent.rules.header",
+          "source": "agent.rules.md",
+          "title": "Document Header",
+          "level": 1,
+          "content": "# Agent Rules",
+          "tokensEst": 4,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 4,
+            "cumulative": 4,
+            "risk": 0,
+            "density": 1.3333333333333333
+          }
+        },
+        {
+          "id": "agent.rules.code_agent",
+          "source": "agent.rules.md",
+          "title": "Code Agent",
+          "headingNumber": "1",
+          "level": 2,
+          "content": "### 1.1 Role\n\nPrimary implementation agent. Feature development, testing, refactoring, bug fixes.\n\n### 1.2 Tech Stack\n\n- Backend: NestJS (TypeScript)\n- Frontend: Next.js (App Router, TypeScript)\n- Database: PostgreSQL\n- ORM: Prisma\n- Testing: Jest + Supertest\n\n### 1.3 Source of Truth Hierarchy\n\n1. CI / Automated Validation\n2. ADRs (docs/decisions.md)\n3. Constitution (docs/constitution.md)\n4. Architecture (docs/architecture.md)\n5. System Contracts (.kilo/rules/system/contracts/)\n6. Agent Rules (this file)\n7. Task Requirements\n8. Codebase\n\n### 1.4 Implementation Rules\n\n- Follow existing patterns first\n- Prefer consistency over novelty\n- Prefer simple solutions, minimize changes\n- Reuse existing modules\n- Avoid unnecessary abstractions and speculative design\n- Keep implementations production-ready\n- Preserve existing behavior unless explicitly requested\n- Minimize blast radius\n\n### 1.5 Testing\n\n- Add/update tests for non-trivial changes\n- Validate edge cases and error handling\n- Never claim tests/build/lint passed unless actually executed\n\n### 1.6 Lifecycle Obligation (ADR-008)\n\nEvery new file MUST include a lifecycle declaration as the first line comment.\n\nFormat: `/* @lifecycle <STATE> — <brief reason> */`\n\nValid states: ACTIVE, GENERATED, TEMPORARY, EXPERIMENTAL, ARCHIVED\n\nDefault for new source files: ACTIVE\n\n### 1.7 Guarded Execution\n\n- Router-first: New sessions automatically inject a routing instruction\n- Execution lock: Once PLAN is set, no re-routing or re-planning\n- POST_VERIFY: Only PASS or FLAG → COMMIT; FAIL → CODE retry (max 1)\n- Never bypass the guard unless KILO_GUARD_BYPASS=true\n\n### 1.8 Escalation\n\n- Simple architecture review, drift detection, plan revision → architect-quick\n- ADR creation, schema changes, migrations, security review, infrastructure changes, service decomposition, framework migration → architect-deep\n- Task ambiguity → Planner\n\n### 1.9 Definition of Done\n\n1. Build succeeds\n2. Tests pass\n3. Constitution satisfied\n4. Documentation updated\n5. Work queue updated\n6. Post-verify passed",
+          "tokensEst": 512,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 512,
+            "cumulative": 512,
+            "risk": 0,
+            "density": 170.66666666666666
+          }
+        },
+        {
+          "id": "agent.rules.role",
+          "source": "agent.rules.md",
+          "title": "Role",
+          "headingNumber": "1.1",
+          "level": 3,
+          "content": "Primary implementation agent. Feature development, testing, refactoring, bug fixes.",
+          "tokensEst": 21,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 21,
+            "cumulative": 21,
+            "risk": 0,
+            "density": 7
+          }
+        },
+        {
+          "id": "agent.rules.tech_stack",
+          "source": "agent.rules.md",
+          "title": "Tech Stack",
+          "headingNumber": "1.2",
+          "level": 3,
+          "content": "- Backend: NestJS (TypeScript)\n- Frontend: Next.js (App Router, TypeScript)\n- Database: PostgreSQL\n- ORM: Prisma\n- Testing: Jest + Supertest",
+          "tokensEst": 35,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 35,
+            "cumulative": 35,
+            "risk": 0,
+            "density": 11.666666666666666
+          }
+        },
+        {
+          "id": "agent.rules.source_of_truth_hierarchy",
+          "source": "agent.rules.md",
+          "title": "Source of Truth Hierarchy",
+          "headingNumber": "1.3",
+          "level": 3,
+          "content": "1. CI / Automated Validation\n2. ADRs (docs/decisions.md)\n3. Constitution (docs/constitution.md)\n4. Architecture (docs/architecture.md)\n5. System Contracts (.kilo/rules/system/contracts/)\n6. Agent Rules (this file)\n7. Task Requirements\n8. Codebase",
+          "tokensEst": 62,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 62,
+            "cumulative": 62,
+            "risk": 0,
+            "density": 20.666666666666668
+          }
+        },
+        {
+          "id": "agent.rules.implementation_rules",
+          "source": "agent.rules.md",
+          "title": "Implementation Rules",
+          "headingNumber": "1.4",
+          "level": 3,
+          "content": "- Follow existing patterns first\n- Prefer consistency over novelty\n- Prefer simple solutions, minimize changes\n- Reuse existing modules\n- Avoid unnecessary abstractions and speculative design\n- Keep implementations production-ready\n- Preserve existing behavior unless explicitly requested\n- Minimize blast radius",
+          "tokensEst": 78,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 78,
+            "cumulative": 78,
+            "risk": 0,
+            "density": 26
+          }
+        },
+        {
+          "id": "agent.rules.testing",
+          "source": "agent.rules.md",
+          "title": "Testing",
+          "headingNumber": "1.5",
+          "level": 3,
+          "content": "- Add/update tests for non-trivial changes\n- Validate edge cases and error handling\n- Never claim tests/build/lint passed unless actually executed",
+          "tokensEst": 37,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 37,
+            "cumulative": 37,
+            "risk": 0,
+            "density": 12.333333333333334
+          }
+        },
+        {
+          "id": "agent.rules.lifecycle_obligation_adr_008",
+          "source": "agent.rules.md",
+          "title": "Lifecycle Obligation (ADR-008)",
+          "headingNumber": "1.6",
+          "level": 3,
+          "content": "Every new file MUST include a lifecycle declaration as the first line comment.\n\nFormat: `/* @lifecycle <STATE> — <brief reason> */`\n\nValid states: ACTIVE, GENERATED, TEMPORARY, EXPERIMENTAL, ARCHIVED\n\nDefault for new source files: ACTIVE",
+          "tokensEst": 60,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 60,
+            "cumulative": 60,
+            "risk": 0,
+            "density": 20
+          }
+        },
+        {
+          "id": "agent.rules.guarded_execution",
+          "source": "agent.rules.md",
+          "title": "Guarded Execution",
+          "headingNumber": "1.7",
+          "level": 3,
+          "content": "- Router-first: New sessions automatically inject a routing instruction\n- Execution lock: Once PLAN is set, no re-routing or re-planning\n- POST_VERIFY: Only PASS or FLAG → COMMIT; FAIL → CODE retry (max 1)\n- Never bypass the guard unless KILO_GUARD_BYPASS=true",
+          "tokensEst": 65,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 65,
+            "cumulative": 65,
+            "risk": 0,
+            "density": 21.666666666666668
+          }
+        },
+        {
+          "id": "agent.rules.escalation",
+          "source": "agent.rules.md",
+          "title": "Escalation",
+          "headingNumber": "1.8",
+          "level": 3,
+          "content": "- Simple architecture review, drift detection, plan revision → architect-quick\n- ADR creation, schema changes, migrations, security review, infrastructure changes, service decomposition, framework migration → architect-deep\n- Task ambiguity → Planner",
+          "tokensEst": 63,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 63,
+            "cumulative": 63,
+            "risk": 0,
+            "density": 21
+          }
+        },
+        {
+          "id": "agent.rules.definition_of_done",
+          "source": "agent.rules.md",
+          "title": "Definition of Done",
+          "headingNumber": "1.9",
+          "level": 3,
+          "content": "1. Build succeeds\n2. Tests pass\n3. Constitution satisfied\n4. Documentation updated\n5. Work queue updated\n6. Post-verify passed",
+          "tokensEst": 32,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 32,
+            "cumulative": 32,
+            "risk": 0,
+            "density": 10.666666666666666
+          }
+        },
+        {
+          "id": "agent.rules.pre_verify_agent",
+          "source": "agent.rules.md",
+          "title": "Pre-Verify Agent",
+          "headingNumber": "2",
+          "level": 2,
+          "content": "### 2.1 Role\n\nFeasibility and constraint validation BEFORE code execution. Validates PLAN output + optional ARCH analysis. Never implements.\n\n### 2.2 Input\n\nExecution plan (from Planner) + optional architecture analysis (from Architect)\n\n### 2.3 Validation Checklist\n\n1. **Feasibility:** Is the plan implementable with current tech stack? Are all dependencies available? Is scope realistic?\n2. **Completeness:** Missing requirements? Edge cases identified? Acceptance criteria defined?\n3. **Constraint Compliance:** Does the plan violate Constitution, ADRs, or architecture.md?\n4. **Dependency Correctness:** All dependencies identified? Execution order correct? Circular dependencies?\n5. **Risk Assessment:** Unaddressed risks? Hidden complexities? Fallback strategies?\n6. **Lifecycle Compliance (ADR-008):** All new files identified? Lifecycle states assigned?\n\n### 2.4 Output Format\n\n```",
+          "tokensEst": 223,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 223,
+            "cumulative": 223,
+            "risk": 0,
+            "density": 74.33333333333333
+          }
+        },
+        {
+          "id": "agent.rules.role_2",
+          "source": "agent.rules.md",
+          "title": "Role",
+          "headingNumber": "2.1",
+          "level": 3,
+          "content": "Feasibility and constraint validation BEFORE code execution. Validates PLAN output + optional ARCH analysis. Never implements.",
+          "tokensEst": 32,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 32,
+            "cumulative": 32,
+            "risk": 0,
+            "density": 10.666666666666666
+          }
+        },
+        {
+          "id": "agent.rules.input",
+          "source": "agent.rules.md",
+          "title": "Input",
+          "headingNumber": "2.2",
+          "level": 3,
+          "content": "Execution plan (from Planner) + optional architecture analysis (from Architect)",
+          "tokensEst": 20,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 20,
+            "cumulative": 20,
+            "risk": 0,
+            "density": 6.666666666666667
+          }
+        },
+        {
+          "id": "agent.rules.validation_checklist",
+          "source": "agent.rules.md",
+          "title": "Validation Checklist",
+          "headingNumber": "2.3",
+          "level": 3,
+          "content": "1. **Feasibility:** Is the plan implementable with current tech stack? Are all dependencies available? Is scope realistic?\n2. **Completeness:** Missing requirements? Edge cases identified? Acceptance criteria defined?\n3. **Constraint Compliance:** Does the plan violate Constitution, ADRs, or architecture.md?\n4. **Dependency Correctness:** All dependencies identified? Execution order correct? Circular dependencies?\n5. **Risk Assessment:** Unaddressed risks? Hidden complexities? Fallback strategies?\n6. **Lifecycle Compliance (ADR-008):** All new files identified? Lifecycle states assigned?",
+          "tokensEst": 149,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 149,
+            "cumulative": 149,
+            "risk": 0,
+            "density": 49.666666666666664
+          }
+        },
+        {
+          "id": "agent.rules.output_format",
+          "source": "agent.rules.md",
+          "title": "Output Format",
+          "headingNumber": "2.4",
+          "level": 3,
+          "content": "```",
+          "tokensEst": 1,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 1,
+            "cumulative": 1,
+            "risk": 0,
+            "density": 0.3333333333333333
+          }
+        },
+        {
+          "id": "agent.rules.pre_verify_report",
+          "source": "agent.rules.md",
+          "title": "PRE-VERIFY REPORT",
+          "level": 2,
+          "content": "### Decision: PASS | FLAG | BLOCK\n\n### Flags (if any):\n- [severity: low/medium/high] Description\n\n### Blockers (if any):\n- [severity: high] Critical issue description\n\n### Summary:\nBrief assessment\n```\n\n### 2.5 Rules\n\n- Never modify source files\n- Never make architecture decisions\n- Never create ADRs\n- Be precise: cite specific plan items, not general observations\n- If uncertain, flag — do not assume\n\n### 2.6 Gate Decisions\n\n| Decision | Action |\n|----------|--------|\n| PASS | Route to CODE |\n| FLAG | Route to CODE (with documented concerns) |\n| BLOCK | Route to ARCH |\n\nThe Runtime Guard enforces these transitions.",
+          "tokensEst": 156,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 156,
+            "cumulative": 156,
+            "risk": 0,
+            "density": 52
+          }
+        },
+        {
+          "id": "agent.rules.decision_pass_flag_block",
+          "source": "agent.rules.md",
+          "title": "Decision: PASS | FLAG | BLOCK",
+          "level": 3,
+          "content": "",
+          "tokensEst": 0,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 0,
+            "cumulative": 0,
+            "risk": 0,
+            "density": 0
+          }
+        },
+        {
+          "id": "agent.rules.flags_if_any",
+          "source": "agent.rules.md",
+          "title": "Flags (if any):",
+          "level": 3,
+          "content": "- [severity: low/medium/high] Description",
+          "tokensEst": 11,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 11,
+            "cumulative": 11,
+            "risk": 0,
+            "density": 3.6666666666666665
+          }
+        },
+        {
+          "id": "agent.rules.blockers_if_any",
+          "source": "agent.rules.md",
+          "title": "Blockers (if any):",
+          "level": 3,
+          "content": "- [severity: high] Critical issue description",
+          "tokensEst": 12,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 12,
+            "cumulative": 12,
+            "risk": 0,
+            "density": 4
+          }
+        },
+        {
+          "id": "agent.rules.summary",
+          "source": "agent.rules.md",
+          "title": "Summary:",
+          "level": 3,
+          "content": "Brief assessment\n```",
+          "tokensEst": 5,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 5,
+            "cumulative": 5,
+            "risk": 0,
+            "density": 1.6666666666666667
+          }
+        },
+        {
+          "id": "agent.rules.rules",
+          "source": "agent.rules.md",
+          "title": "Rules",
+          "headingNumber": "2.5",
+          "level": 3,
+          "content": "- Never modify source files\n- Never make architecture decisions\n- Never create ADRs\n- Be precise: cite specific plan items, not general observations\n- If uncertain, flag — do not assume",
+          "tokensEst": 47,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 47,
+            "cumulative": 47,
+            "risk": 0,
+            "density": 15.666666666666666
+          }
+        },
+        {
+          "id": "agent.rules.gate_decisions",
+          "source": "agent.rules.md",
+          "title": "Gate Decisions",
+          "headingNumber": "2.6",
+          "level": 3,
+          "content": "| Decision | Action |\n|----------|--------|\n| PASS | Route to CODE |\n| FLAG | Route to CODE (with documented concerns) |\n| BLOCK | Route to ARCH |\n\nThe Runtime Guard enforces these transitions.",
+          "tokensEst": 49,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 49,
+            "cumulative": 49,
+            "risk": 0,
+            "density": 16.333333333333332
+          }
+        },
+        {
+          "id": "agent.rules.post_verify_agent",
+          "source": "agent.rules.md",
+          "title": "Post-Verify Agent",
+          "headingNumber": "3",
+          "level": 2,
+          "content": "### 3.1 Role\n\nQuality assurance, spec compliance, and regression checking AFTER code execution. Performs runtime verification via build/lint/test commands. Never modifies code.\n\n### 3.2 Input\n\nCode implementation output, original plan, acceptance criteria\n\n### 3.3 QA Checklist\n\n- **Spec Compliance:** Code matches requirements? All endpoints as specified? DTOs and validation correct?\n- **Regression:** Existing functionality preserved? Existing tests passing?\n- **Edge Cases:** Error states handled? Boundary values tested? Unusual inputs handled gracefully?\n- **Security:** Injection vulnerabilities? Data exposure? Auth bypass? Guards properly applied?\n- **Consistency:** Follows existing patterns? Follows architecture.md?\n- **Quality:** Clean and well-structured? Maintainable? No unnecessary abstractions?\n- **Lifecycle Compliance (ADR-008):** New files have valid @lifecycle declaration? State appropriate?\n\n### 3.4 Runtime Verification\n\nPOST_VERIFY SHALL execute `npm run build`, `npm run lint`, and `npx jest --passWithNoTests` in strict sequential order. POST_VERIFY captures FULL raw stdout+stderr and performs a self-audit on the results.\n\n**Execution Order:**\n\n| Step | Command | Failure Behavior |\n|------|---------|------------------|\n| 1 | `npm run build` | Blocks all subsequent checks |\n| 2 | `npm run lint` | Runs only if build passes |\n| 3 | `npx jest --passWithNoTests` | Runs only if lint passes |\n\n**Output Capture Rules:**\n- Capture FULL raw stdout and stderr for each command\n- Do NOT summarize, truncate, or filter the output\n- Capture exit codes (0 = pass, non-zero = fail)\n- Record approximate duration for each command\n\n**Self-Audit Checks:**\n\n**Check 1 — Exit Code Audit:**\n- Any non-zero exit code → FAIL verdict\n- \"TIMEOUT\" → FAIL verdict\n- Missing output → FLAG (severity: MEDIUM)\n\n**Check 2 — Pattern Scan:**\nScan the raw output for failure patterns:\n- `Error:`, `Error:` (capture line context)\n- `Exception` (unhandled exceptions)\n- `FAIL` (test failures)\n- `TypeError`, `ReferenceError`, `SyntaxError`\n- `TS\\d+:` (TypeScript compiler error codes)\n- `Module not found`\n- Any `error` level log line\n\n**Check 3 — Cross-Reference:**\n- Cross-check runtime verification results against static analysis findings\n- If build passes but static analysis reveals missing imports → FLAG (HIGH)\n- If tests pass but static analysis reveals missing test files or skipped tests → FLAG (MEDIUM)\n\n**Gate Integration:**\n\n| Runtime Result | Gate Effect |\n|----------------|-------------|\n| All checks pass | Runtime verification supports PASS/FLAG |\n| Any check fails | Runtime verification supports FAIL |\n\n### 3.5 Output Format\n\n#### FAIL Verdict\n\n```",
+          "tokensEst": 668,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 668,
+            "cumulative": 668,
+            "risk": 0,
+            "density": 222.66666666666666
+          }
+        },
+        {
+          "id": "agent.rules.role_3",
+          "source": "agent.rules.md",
+          "title": "Role",
+          "headingNumber": "3.1",
+          "level": 3,
+          "content": "Quality assurance, spec compliance, and regression checking AFTER code execution. Performs runtime verification via build/lint/test commands. Never modifies code.",
+          "tokensEst": 41,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 41,
+            "cumulative": 41,
+            "risk": 0,
+            "density": 13.666666666666666
+          }
+        },
+        {
+          "id": "agent.rules.input_2",
+          "source": "agent.rules.md",
+          "title": "Input",
+          "headingNumber": "3.2",
+          "level": 3,
+          "content": "Code implementation output, original plan, acceptance criteria",
+          "tokensEst": 16,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 16,
+            "cumulative": 16,
+            "risk": 0,
+            "density": 5.333333333333333
+          }
+        },
+        {
+          "id": "agent.rules.qa_checklist",
+          "source": "agent.rules.md",
+          "title": "QA Checklist",
+          "headingNumber": "3.3",
+          "level": 3,
+          "content": "- **Spec Compliance:** Code matches requirements? All endpoints as specified? DTOs and validation correct?\n- **Regression:** Existing functionality preserved? Existing tests passing?\n- **Edge Cases:** Error states handled? Boundary values tested? Unusual inputs handled gracefully?\n- **Security:** Injection vulnerabilities? Data exposure? Auth bypass? Guards properly applied?\n- **Consistency:** Follows existing patterns? Follows architecture.md?\n- **Quality:** Clean and well-structured? Maintainable? No unnecessary abstractions?\n- **Lifecycle Compliance (ADR-008):** New files have valid @lifecycle declaration? State appropriate?",
+          "tokensEst": 159,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 159,
+            "cumulative": 159,
+            "risk": 0,
+            "density": 53
+          }
+        },
+        {
+          "id": "agent.rules.runtime_verification",
+          "source": "agent.rules.md",
+          "title": "Runtime Verification",
+          "headingNumber": "3.4",
+          "level": 3,
+          "content": "POST_VERIFY SHALL execute `npm run build`, `npm run lint`, and `npx jest --passWithNoTests` in strict sequential order. POST_VERIFY captures FULL raw stdout+stderr and performs a self-audit on the results.\n\n**Execution Order:**\n\n| Step | Command | Failure Behavior |\n|------|---------|------------------|\n| 1 | `npm run build` | Blocks all subsequent checks |\n| 2 | `npm run lint` | Runs only if build passes |\n| 3 | `npx jest --passWithNoTests` | Runs only if lint passes |\n\n**Output Capture Rules:**\n- Capture FULL raw stdout and stderr for each command\n- Do NOT summarize, truncate, or filter the output\n- Capture exit codes (0 = pass, non-zero = fail)\n- Record approximate duration for each command\n\n**Self-Audit Checks:**\n\n**Check 1 — Exit Code Audit:**\n- Any non-zero exit code → FAIL verdict\n- \"TIMEOUT\" → FAIL verdict\n- Missing output → FLAG (severity: MEDIUM)\n\n**Check 2 — Pattern Scan:**\nScan the raw output for failure patterns:\n- `Error:`, `Error:` (capture line context)\n- `Exception` (unhandled exceptions)\n- `FAIL` (test failures)\n- `TypeError`, `ReferenceError`, `SyntaxError`\n- `TS\\d+:` (TypeScript compiler error codes)\n- `Module not found`\n- Any `error` level log line\n\n**Check 3 — Cross-Reference:**\n- Cross-check runtime verification results against static analysis findings\n- If build passes but static analysis reveals missing imports → FLAG (HIGH)\n- If tests pass but static analysis reveals missing test files or skipped tests → FLAG (MEDIUM)\n\n**Gate Integration:**\n\n| Runtime Result | Gate Effect |\n|----------------|-------------|\n| All checks pass | Runtime verification supports PASS/FLAG |\n| Any check fails | Runtime verification supports FAIL |",
+          "tokensEst": 419,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 419,
+            "cumulative": 419,
+            "risk": 0,
+            "density": 139.66666666666666
+          }
+        },
+        {
+          "id": "agent.rules.output_format_2",
+          "source": "agent.rules.md",
+          "title": "Output Format",
+          "headingNumber": "3.5",
+          "level": 3,
+          "content": "#### FAIL Verdict\n\n```",
+          "tokensEst": 6,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 6,
+            "cumulative": 6,
+            "risk": 0,
+            "density": 2
+          }
+        },
+        {
+          "id": "agent.rules.post_verify_report",
+          "source": "agent.rules.md",
+          "title": "POST-VERIFY REPORT",
+          "level": 2,
+          "content": "### Decision: FAIL\n\n### Runtime Verification Results\n| Command | Status | Exit Code | Duration |\n|---------|--------|-----------|----------|\n| `npm run build` | PASS | 0 | 11.8s |\n| `npm run lint` | PASS | 0 | 3.9s |\n| `npx jest --passWithNoTests` | FAIL | 1 | 45.2s |\n\n### Failure-to-Task Mapping\n| # | Error | File | Line | Task Context | Severity |\n|---|-------|------|------|-------------|----------|\n| 1 | <error> | <file> | <line> | TASK: \"<description>\" — <root cause> | HIGH |\n\n### Failed Tasks (for CODE retry)\n1. **TASK:** <description> — <fix guidance>\n\n### Summary\n<summary of failures and recommended fix scope>\n```\n\n#### PASS Verdict\n\n```",
+          "tokensEst": 163,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 163,
+            "cumulative": 163,
+            "risk": 0,
+            "density": 54.333333333333336
+          }
+        },
+        {
+          "id": "agent.rules.decision_fail",
+          "source": "agent.rules.md",
+          "title": "Decision: FAIL",
+          "level": 3,
+          "content": "",
+          "tokensEst": 0,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 0,
+            "cumulative": 0,
+            "risk": 0,
+            "density": 0
+          }
+        },
+        {
+          "id": "agent.rules.runtime_verification_results",
+          "source": "agent.rules.md",
+          "title": "Runtime Verification Results",
+          "level": 3,
+          "content": "| Command | Status | Exit Code | Duration |\n|---------|--------|-----------|----------|\n| `npm run build` | PASS | 0 | 11.8s |\n| `npm run lint` | PASS | 0 | 3.9s |\n| `npx jest --passWithNoTests` | FAIL | 1 | 45.2s |",
+          "tokensEst": 54,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 54,
+            "cumulative": 54,
+            "risk": 0,
+            "density": 18
+          }
+        },
+        {
+          "id": "agent.rules.failure_to_task_mapping",
+          "source": "agent.rules.md",
+          "title": "Failure-to-Task Mapping",
+          "level": 3,
+          "content": "| # | Error | File | Line | Task Context | Severity |\n|---|-------|------|------|-------------|----------|\n| 1 | <error> | <file> | <line> | TASK: \"<description>\" — <root cause> | HIGH |",
+          "tokensEst": 47,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 47,
+            "cumulative": 47,
+            "risk": 0,
+            "density": 15.666666666666666
+          }
+        },
+        {
+          "id": "agent.rules.failed_tasks_for_code_retry",
+          "source": "agent.rules.md",
+          "title": "Failed Tasks (for CODE retry)",
+          "level": 3,
+          "content": "1. **TASK:** <description> — <fix guidance>",
+          "tokensEst": 11,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 11,
+            "cumulative": 11,
+            "risk": 0,
+            "density": 3.6666666666666665
+          }
+        },
+        {
+          "id": "agent.rules.summary_2",
+          "source": "agent.rules.md",
+          "title": "Summary",
+          "level": 3,
+          "content": "<summary of failures and recommended fix scope>\n```\n\n#### PASS Verdict\n\n```",
+          "tokensEst": 19,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 19,
+            "cumulative": 19,
+            "risk": 0,
+            "density": 6.333333333333333
+          }
+        },
+        {
+          "id": "agent.rules.post_verify_report_2",
+          "source": "agent.rules.md",
+          "title": "POST-VERIFY REPORT",
+          "level": 2,
+          "content": "### Decision: PASS\n\n### Runtime Verification Results\n| Command | Status | Exit Code | Duration |\n|---------|--------|-----------|----------|\n| `npm run build` | PASS | 0 | 11.8s |\n| `npm run lint` | PASS | 0 | 3.9s |\n| `npx jest --passWithNoTests` | PASS | 0 | 42.1s |\n\n### Summary\nAll runtime checks passed — 0 compiler errors, 0 lint violations, all tests passing.\n```\n\n#### FLAG Verdict\n\n```",
+          "tokensEst": 99,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 99,
+            "cumulative": 99,
+            "risk": 0,
+            "density": 33
+          }
+        },
+        {
+          "id": "agent.rules.decision_pass",
+          "source": "agent.rules.md",
+          "title": "Decision: PASS",
+          "level": 3,
+          "content": "",
+          "tokensEst": 0,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 0,
+            "cumulative": 0,
+            "risk": 0,
+            "density": 0
+          }
+        },
+        {
+          "id": "agent.rules.runtime_verification_results_2",
+          "source": "agent.rules.md",
+          "title": "Runtime Verification Results",
+          "level": 3,
+          "content": "| Command | Status | Exit Code | Duration |\n|---------|--------|-----------|----------|\n| `npm run build` | PASS | 0 | 11.8s |\n| `npm run lint` | PASS | 0 | 3.9s |\n| `npx jest --passWithNoTests` | PASS | 0 | 42.1s |",
+          "tokensEst": 54,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 54,
+            "cumulative": 54,
+            "risk": 0,
+            "density": 18
+          }
+        },
+        {
+          "id": "agent.rules.summary_3",
+          "source": "agent.rules.md",
+          "title": "Summary",
+          "level": 3,
+          "content": "All runtime checks passed — 0 compiler errors, 0 lint violations, all tests passing.\n```\n\n#### FLAG Verdict\n\n```",
+          "tokensEst": 28,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 28,
+            "cumulative": 28,
+            "risk": 0,
+            "density": 9.333333333333334
+          }
+        },
+        {
+          "id": "agent.rules.post_verify_report_3",
+          "source": "agent.rules.md",
+          "title": "POST-VERIFY REPORT",
+          "level": 2,
+          "content": "### Decision: FLAG\n\n### Runtime Verification Results\n| Command | Status | Exit Code | Duration |\n|---------|--------|-----------|----------|\n| `npm run build` | PASS | 0 | 11.8s |\n| `npm run lint` | PASS | 0 | 3.9s |\n| `npx jest --passWithNoTests` | PASS | 0 | 42.1s |\n\n### Flags\n- [severity: low] <file>:<line> — <non-blocking concern>\n\n### Summary\nRuntime verification passed. <N> low-severity flags.\n```\n\n### 3.6 Rules\n\n- Never modify source files — review only (`edit: deny`)\n- Bash: allow for whitelisted verification commands (build/lint/test)\n- Never make architecture decisions\n- Never create ADRs\n- Be specific: cite exact code locations\n- Map each runtime failure to the Code Agent task that introduced it\n- If uncertain, flag — do not assume\n\n### 3.7 Runtime Verification Environment\n\nPOST_VERIFY executes verification commands directly on the host. No Docker sandbox is used — the direct execution mode is simpler and has been empirically proven to work without security issues (ADR-018 §5).\n\nTimeout contract (enforced by POST_VERIFY):\n| Command | Timeout | Action on Exceed |\n|---------|---------|------------------|\n| `npm run build` | 120 seconds | Treat as FAIL, report TIMEOUT |\n| `npm run lint` | 60 seconds | Treat as FAIL, report TIMEOUT |\n| `npx jest --passWithNoTests` | 300 seconds | Treat as FAIL, report TIMEOUT |\n\n### 3.8 Gate Decisions\n\n| Decision | Action | Condition |\n|----------|--------|-----------|\n| PASS | Route to COMMIT | Runtime checks pass + static analysis clean |\n| FLAG | Route to COMMIT (with documented concerns) | Runtime checks pass + non-blocking static flags |\n| FAIL | Route to CODE (retry, max 1) | Runtime check fails OR blocking static issue |\n| BLOCK | Route to ARCH | Security issue, architecture violation, or repeated FAIL > retry limit |\n\nThe Runtime Guard enforces these transitions.\n\n### 3.9 Escalation\n\n- Security issues → escalate immediately\n- Spec ambiguity → escalate to Planner with specific questions\n\n---\n\n**End of Agent Rules**",
+          "tokensEst": 499,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 499,
+            "cumulative": 546,
+            "risk": 0,
+            "density": 166.33333333333334
+          }
+        },
+        {
+          "id": "agent.rules.decision_flag",
+          "source": "agent.rules.md",
+          "title": "Decision: FLAG",
+          "level": 3,
+          "content": "",
+          "tokensEst": 0,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 0,
+            "cumulative": 0,
+            "risk": 0,
+            "density": 0
+          }
+        },
+        {
+          "id": "agent.rules.runtime_verification_results_3",
+          "source": "agent.rules.md",
+          "title": "Runtime Verification Results",
+          "level": 3,
+          "content": "| Command | Status | Exit Code | Duration |\n|---------|--------|-----------|----------|\n| `npm run build` | PASS | 0 | 11.8s |\n| `npm run lint` | PASS | 0 | 3.9s |\n| `npx jest --passWithNoTests` | PASS | 0 | 42.1s |",
+          "tokensEst": 54,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 54,
+            "cumulative": 54,
+            "risk": 0,
+            "density": 18
+          }
+        },
+        {
+          "id": "agent.rules.flags",
+          "source": "agent.rules.md",
+          "title": "Flags",
+          "level": 3,
+          "content": "- [severity: low] <file>:<line> — <non-blocking concern>",
+          "tokensEst": 14,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 14,
+            "cumulative": 14,
+            "risk": 0,
+            "density": 4.666666666666667
+          }
+        },
+        {
+          "id": "agent.rules.summary_4",
+          "source": "agent.rules.md",
+          "title": "Summary",
+          "level": 3,
+          "content": "Runtime verification passed. <N> low-severity flags.\n```",
+          "tokensEst": 14,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 14,
+            "cumulative": 14,
+            "risk": 0,
+            "density": 4.666666666666667
+          }
+        },
+        {
+          "id": "agent.rules.rules_2",
+          "source": "agent.rules.md",
+          "title": "Rules",
+          "headingNumber": "3.6",
+          "level": 3,
+          "content": "- Never modify source files — review only (`edit: deny`)\n- Bash: allow for whitelisted verification commands (build/lint/test)\n- Never make architecture decisions\n- Never create ADRs\n- Be specific: cite exact code locations\n- Map each runtime failure to the Code Agent task that introduced it\n- If uncertain, flag — do not assume",
+          "tokensEst": 83,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 83,
+            "cumulative": 83,
+            "risk": 0,
+            "density": 27.666666666666668
+          }
+        },
+        {
+          "id": "agent.rules.runtime_verification_environment",
+          "source": "agent.rules.md",
+          "title": "Runtime Verification Environment",
+          "headingNumber": "3.7",
+          "level": 3,
+          "content": "POST_VERIFY executes verification commands directly on the host. No Docker sandbox is used — the direct execution mode is simpler and has been empirically proven to work without security issues (ADR-018 §5).\n\nTimeout contract (enforced by POST_VERIFY):\n| Command | Timeout | Action on Exceed |\n|---------|---------|------------------|\n| `npm run build` | 120 seconds | Treat as FAIL, report TIMEOUT |\n| `npm run lint` | 60 seconds | Treat as FAIL, report TIMEOUT |\n| `npx jest --passWithNoTests` | 300 seconds | Treat as FAIL, report TIMEOUT |",
+          "tokensEst": 136,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 136,
+            "cumulative": 183,
+            "risk": 0,
+            "density": 45.333333333333336
+          }
+        },
+        {
+          "id": "agent.rules.gate_decisions_2",
+          "source": "agent.rules.md",
+          "title": "Gate Decisions",
+          "headingNumber": "3.8",
+          "level": 3,
+          "content": "| Decision | Action | Condition |\n|----------|--------|-----------|\n| PASS | Route to COMMIT | Runtime checks pass + static analysis clean |\n| FLAG | Route to COMMIT (with documented concerns) | Runtime checks pass + non-blocking static flags |\n| FAIL | Route to CODE (retry, max 1) | Runtime check fails OR blocking static issue |\n| BLOCK | Route to ARCH | Security issue, architecture violation, or repeated FAIL > retry limit |\n\nThe Runtime Guard enforces these transitions.",
+          "tokensEst": 120,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 120,
+            "cumulative": 120,
+            "risk": 0,
+            "density": 40
+          }
+        },
+        {
+          "id": "agent.rules.escalation_2",
+          "source": "agent.rules.md",
+          "title": "Escalation",
+          "headingNumber": "3.9",
+          "level": 3,
+          "content": "- Security issues → escalate immediately\n- Spec ambiguity → escalate to Planner with specific questions\n\n---\n\n**End of Agent Rules**",
+          "tokensEst": 33,
+          "tags": [
+            "all",
+            "backend",
+            "coding"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 33,
+            "cumulative": 33,
+            "risk": 0,
+            "density": 11
+          }
+        }
+      ]
+    },
+    {
+      "file": "domain/domain.rules.md",
+      "tags": [
+        "backend",
+        "architecture",
+        "database"
+      ],
+      "sections": [
+        {
+          "id": "domain.rules.header",
+          "source": "domain.rules.md",
+          "title": "Document Header",
+          "level": 1,
+          "content": "# Domain Rules",
+          "tokensEst": 4,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 4,
+            "cumulative": 4,
+            "risk": 0,
+            "density": 1.3333333333333333
+          }
+        },
+        {
+          "id": "domain.rules.purpose",
+          "source": "domain.rules.md",
+          "title": "Purpose",
+          "headingNumber": "1",
+          "level": 2,
+          "content": "Defines module structure, Prisma schema conventions, DTO validation, and shared utility patterns for the Floweng backend.\n\n---",
+          "tokensEst": 32,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 32,
+            "cumulative": 32,
+            "risk": 0,
+            "density": 10.666666666666666
+          }
+        },
+        {
+          "id": "domain.rules.module_patterns",
+          "source": "domain.rules.md",
+          "title": "Module Patterns",
+          "headingNumber": "2",
+          "level": 2,
+          "content": "### 2.1 Module Structure Convention\n\nEvery NestJS backend module follows the `Controller → Service → Prisma → Database` layer pattern.\n\n```\nsrc/<module>/\n├── <module>.module.ts           # NestJS @Module decorator\n├── <module>.controller.ts       # HTTP request/response handling\n├── services/\n│   └── <name>.service.ts        # Business logic\n├── dto/\n│   ├── create-<entity>.dto.ts   # Creation DTOs\n│   └── <query>-<entity>.dto.ts  # Query/response DTOs\n├── interfaces/\n│   └── <name>.interface.ts      # TypeScript interfaces/types\n├── schedulers/\n│   └── <name>.scheduler.ts      # Cron jobs (when needed)\n└── __tests__/\n    └── <name>.spec.ts           # Unit tests colocated\n```\n\n### 2.2 Module Registration\n\n- Every module must be registered in `app.module.ts` imports\n- Shared modules (SharedModule) must be imported by dependent modules\n- Circular imports between modules are forbidden (Constitution §5)\n\n### 2.3 File Naming\n\n| File Type | Convention | Example |\n|-----------|-----------|---------|\n| Module | `<name>.module.ts` | `evaluation.module.ts` |\n| Controller | `<name>.controller.ts` | `recommendation.controller.ts` |\n| Service | `<name>.service.ts` | `trust-score.service.ts` |\n| DTO | `<action>-<entity>.dto.ts` | `create-execution.dto.ts` |\n| Interface | `<name>.interface.ts` | `metric.interface.ts` |\n| Scheduler | `<name>.scheduler.ts` | `metric.scheduler.ts` |\n| Test | `<name>.spec.ts` | `execution-trace.service.spec.ts` |\n| E2E Test | `<name>.e2e-spec.ts` | `recommendation-flow.e2e-spec.ts` |\n\n### 2.4 Cross-Module Imports\n\n- Modules import from `SharedModule` for common utilities (PrismaService, filters, interceptors)\n- Direct cross-module service calls require explicit provider export + import\n- Prefer composing through controllers (HTTP calls) over direct service imports for unrelated modules\n\n### 2.5 Reference Templates\n\nExisting canonical modules to follow:\n- `recommendation/` (21 files) — Recommendation registry (ADR-002)\n- `evaluation/` (18 files) — Agent evaluation harness (ADR-003)\n- `auth/` (7 files) — Authentication and authorization\n- `user/` (5 files) — User management",
+          "tokensEst": 531,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 531,
+            "cumulative": 750,
+            "risk": 0.007499999999999996,
+            "density": 177
+          }
+        },
+        {
+          "id": "domain.rules.module_structure_convention",
+          "source": "domain.rules.md",
+          "title": "Module Structure Convention",
+          "headingNumber": "2.1",
+          "level": 3,
+          "content": "Every NestJS backend module follows the `Controller → Service → Prisma → Database` layer pattern.\n\n```\nsrc/<module>/\n├── <module>.module.ts           # NestJS @Module decorator\n├── <module>.controller.ts       # HTTP request/response handling\n├── services/\n│   └── <name>.service.ts        # Business logic\n├── dto/\n│   ├── create-<entity>.dto.ts   # Creation DTOs\n│   └── <query>-<entity>.dto.ts  # Query/response DTOs\n├── interfaces/\n│   └── <name>.interface.ts      # TypeScript interfaces/types\n├── schedulers/\n│   └── <name>.scheduler.ts      # Cron jobs (when needed)\n└── __tests__/\n    └── <name>.spec.ts           # Unit tests colocated\n```",
+          "tokensEst": 162,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 162,
+            "cumulative": 162,
+            "risk": 0,
+            "density": 54
+          }
+        },
+        {
+          "id": "domain.rules.module_registration",
+          "source": "domain.rules.md",
+          "title": "Module Registration",
+          "headingNumber": "2.2",
+          "level": 3,
+          "content": "- Every module must be registered in `app.module.ts` imports\n- Shared modules (SharedModule) must be imported by dependent modules\n- Circular imports between modules are forbidden (Constitution §5)",
+          "tokensEst": 50,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 50,
+            "cumulative": 269,
+            "risk": 0.007499999999999996,
+            "density": 16.666666666666668
+          }
+        },
+        {
+          "id": "domain.rules.file_naming",
+          "source": "domain.rules.md",
+          "title": "File Naming",
+          "headingNumber": "2.3",
+          "level": 3,
+          "content": "| File Type | Convention | Example |\n|-----------|-----------|---------|\n| Module | `<name>.module.ts` | `evaluation.module.ts` |\n| Controller | `<name>.controller.ts` | `recommendation.controller.ts` |\n| Service | `<name>.service.ts` | `trust-score.service.ts` |\n| DTO | `<action>-<entity>.dto.ts` | `create-execution.dto.ts` |\n| Interface | `<name>.interface.ts` | `metric.interface.ts` |\n| Scheduler | `<name>.scheduler.ts` | `metric.scheduler.ts` |\n| Test | `<name>.spec.ts` | `execution-trace.service.spec.ts` |\n| E2E Test | `<name>.e2e-spec.ts` | `recommendation-flow.e2e-spec.ts` |",
+          "tokensEst": 147,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 147,
+            "cumulative": 147,
+            "risk": 0,
+            "density": 49
+          }
+        },
+        {
+          "id": "domain.rules.cross_module_imports",
+          "source": "domain.rules.md",
+          "title": "Cross-Module Imports",
+          "headingNumber": "2.4",
+          "level": 3,
+          "content": "- Modules import from `SharedModule` for common utilities (PrismaService, filters, interceptors)\n- Direct cross-module service calls require explicit provider export + import\n- Prefer composing through controllers (HTTP calls) over direct service imports for unrelated modules",
+          "tokensEst": 69,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 69,
+            "cumulative": 69,
+            "risk": 0,
+            "density": 23
+          }
+        },
+        {
+          "id": "domain.rules.reference_templates",
+          "source": "domain.rules.md",
+          "title": "Reference Templates",
+          "headingNumber": "2.5",
+          "level": 3,
+          "content": "Existing canonical modules to follow:\n- `recommendation/` (21 files) — Recommendation registry (ADR-002)\n- `evaluation/` (18 files) — Agent evaluation harness (ADR-003)\n- `auth/` (7 files) — Authentication and authorization\n- `user/` (5 files) — User management",
+          "tokensEst": 66,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 66,
+            "cumulative": 66,
+            "risk": 0,
+            "density": 22
+          }
+        },
+        {
+          "id": "domain.rules.prisma_conventions",
+          "source": "domain.rules.md",
+          "title": "Prisma Conventions",
+          "headingNumber": "3",
+          "level": 2,
+          "content": "Reference file: `backend/prisma/schema.prisma`\n\n### 3.1 Model Naming\n\n- Models: singular PascalCase (`Recommendation`, not `Recommendations`)\n- Field names: camelCase with `@map(\"snake_case\")` for database columns\n- Enums: singular PascalCase (`Difficulty`, `UserRole`)\n- Table names: snake_case via `@@map(\"table_name\")`\n\n### 3.2 Field Conventions\n\n| Field | Type | Convention |\n|-------|------|------------|\n| Primary Key | `String @id @default(uuid(7))` | UUID v7, never autoincrement |\n| Created At | `DateTime @default(now()) @map(\"created_at\")` | Always present |\n| Updated At | `DateTime @updatedAt @map(\"updated_at\")` | Always present |\n| Foreign Key | `String @map(\"entity_id\")` | snake_case FK name |\n| Soft Deletes | Not used (hard deletes with cascade) | Until explicitly needed |\n\n### 3.3 Index Strategy\n\n- Single-field indexes on columns used in `where` or `orderBy`\n- Compound indexes on multi-field query patterns: `@@index([field1, field2])`\n- Unique compound constraints: `@@unique([field1, field2])`\n- Always add indexes on FK fields used in relations\n- Time-range queries should use `createdAt` index\n\n### 3.4 Relations\n\n- `onDelete: Cascade` for child records (exercises cascade from lesson)\n- Required relations use `@relation(fields: [...], references: [...])`\n- Always name the relation reference field explicitly\n- Use `@@map(\"table_name\")` for all models\n\n### 3.5 Enum Definitions\n\n- Define before first model that uses them\n- PascalCase values: `BEGINNER`, `INTERMEDIATE`, `ADVANCED`\n- Default value: `@default(<FIRST_VALUE>)`\n\n### 3.6 Schema Organization\n\nUse section comment markers to group related models:\n\n```prisma\n// ─── Module Name (TASK-XXX) ──────────────────────────────────────\n```\n\nKeep models in a single `schema.prisma` file. Extract only if file exceeds 500 lines.",
+          "tokensEst": 452,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 452,
+            "cumulative": 452,
+            "risk": 0,
+            "density": 150.66666666666666
+          }
+        },
+        {
+          "id": "domain.rules.model_naming",
+          "source": "domain.rules.md",
+          "title": "Model Naming",
+          "headingNumber": "3.1",
+          "level": 3,
+          "content": "- Models: singular PascalCase (`Recommendation`, not `Recommendations`)\n- Field names: camelCase with `@map(\"snake_case\")` for database columns\n- Enums: singular PascalCase (`Difficulty`, `UserRole`)\n- Table names: snake_case via `@@map(\"table_name\")`",
+          "tokensEst": 63,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 63,
+            "cumulative": 63,
+            "risk": 0,
+            "density": 21
+          }
+        },
+        {
+          "id": "domain.rules.field_conventions",
+          "source": "domain.rules.md",
+          "title": "Field Conventions",
+          "headingNumber": "3.2",
+          "level": 3,
+          "content": "| Field | Type | Convention |\n|-------|------|------------|\n| Primary Key | `String @id @default(uuid(7))` | UUID v7, never autoincrement |\n| Created At | `DateTime @default(now()) @map(\"created_at\")` | Always present |\n| Updated At | `DateTime @updatedAt @map(\"updated_at\")` | Always present |\n| Foreign Key | `String @map(\"entity_id\")` | snake_case FK name |\n| Soft Deletes | Not used (hard deletes with cascade) | Until explicitly needed |",
+          "tokensEst": 111,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 111,
+            "cumulative": 111,
+            "risk": 0,
+            "density": 37
+          }
+        },
+        {
+          "id": "domain.rules.index_strategy",
+          "source": "domain.rules.md",
+          "title": "Index Strategy",
+          "headingNumber": "3.3",
+          "level": 3,
+          "content": "- Single-field indexes on columns used in `where` or `orderBy`\n- Compound indexes on multi-field query patterns: `@@index([field1, field2])`\n- Unique compound constraints: `@@unique([field1, field2])`\n- Always add indexes on FK fields used in relations\n- Time-range queries should use `createdAt` index",
+          "tokensEst": 76,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 76,
+            "cumulative": 76,
+            "risk": 0,
+            "density": 25.333333333333332
+          }
+        },
+        {
+          "id": "domain.rules.relations",
+          "source": "domain.rules.md",
+          "title": "Relations",
+          "headingNumber": "3.4",
+          "level": 3,
+          "content": "- `onDelete: Cascade` for child records (exercises cascade from lesson)\n- Required relations use `@relation(fields: [...], references: [...])`\n- Always name the relation reference field explicitly\n- Use `@@map(\"table_name\")` for all models",
+          "tokensEst": 60,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 60,
+            "cumulative": 60,
+            "risk": 0,
+            "density": 20
+          }
+        },
+        {
+          "id": "domain.rules.enum_definitions",
+          "source": "domain.rules.md",
+          "title": "Enum Definitions",
+          "headingNumber": "3.5",
+          "level": 3,
+          "content": "- Define before first model that uses them\n- PascalCase values: `BEGINNER`, `INTERMEDIATE`, `ADVANCED`\n- Default value: `@default(<FIRST_VALUE>)`",
+          "tokensEst": 37,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 37,
+            "cumulative": 37,
+            "risk": 0,
+            "density": 12.333333333333334
+          }
+        },
+        {
+          "id": "domain.rules.schema_organization",
+          "source": "domain.rules.md",
+          "title": "Schema Organization",
+          "headingNumber": "3.6",
+          "level": 3,
+          "content": "Use section comment markers to group related models:\n\n```prisma\n// ─── Module Name (TASK-XXX) ──────────────────────────────────────\n```\n\nKeep models in a single `schema.prisma` file. Extract only if file exceeds 500 lines.",
+          "tokensEst": 56,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 56,
+            "cumulative": 56,
+            "risk": 0,
+            "density": 18.666666666666668
+          }
+        },
+        {
+          "id": "domain.rules.dto_validation",
+          "source": "domain.rules.md",
+          "title": "DTO Validation",
+          "headingNumber": "4",
+          "level": 2,
+          "content": "### 4.1 DTO Location\n\nAll DTOs reside in `src/<module>/dto/` as individual files.\n\n### 4.2 DTO Naming\n\n| Purpose | Convention | Example |\n|---------|-----------|---------|\n| Creation | `Create<Entity>Dto` | `CreateExecutionDto` |\n| Update | `Update<Entity>Dto` | `UpdateUserDto` |\n| Query parameters | `Query<Entity>Dto` | `QueryExecutionsDto` |\n| Response | `<Entity>ResponseDto` (or inline) | `ExecutionResponseDto` |\n\n### 4.3 Validation Decorators\n\nEvery DTO MUST use `class-validator` decorators:\n\n```typescript\nimport { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';\nimport { Expose, Transform } from 'class-transformer';\n```\n\n- Required fields: `@IsString()`, `@IsInt()`, etc.\n- Optional fields: `@IsOptional()` + type decorator\n- Numeric constraints: `@Min(0)`, `@Max(100)`\n- String length: `@MinLength(1)`, `@MaxLength(255)`\n\n### 4.4 Transformation\n\nUse `class-transformer` where needed:\n\n```typescript\n@Expose()           // Include in serialization\n@Transform(...)     // Value transformation\n```\n\nValidation and transformation are applied at the controller boundary via `ValidationPipe` (global).\n\n### 4.5 Shared DTOs\n\n- Simple pagination, ID params, or status filters should use shared types from `shared/`\n- Complex module-specific DTOs live in their own module's `dto/` directory\n\n### 4.6 Reference Templates\n\nCanonical DTO examples:\n- `recommendation/dto/create-recommendation.dto.ts`\n- `recommendation/dto/accuracy-query.dto.ts`\n- `evaluation/dto/create-execution.dto.ts`\n- `evaluation/dto/query-metrics.dto.ts`",
+          "tokensEst": 386,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 386,
+            "cumulative": 386,
+            "risk": 0,
+            "density": 128.66666666666666
+          }
+        },
+        {
+          "id": "domain.rules.dto_location",
+          "source": "domain.rules.md",
+          "title": "DTO Location",
+          "headingNumber": "4.1",
+          "level": 3,
+          "content": "All DTOs reside in `src/<module>/dto/` as individual files.",
+          "tokensEst": 15,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 15,
+            "cumulative": 15,
+            "risk": 0,
+            "density": 5
+          }
+        },
+        {
+          "id": "domain.rules.dto_naming",
+          "source": "domain.rules.md",
+          "title": "DTO Naming",
+          "headingNumber": "4.2",
+          "level": 3,
+          "content": "| Purpose | Convention | Example |\n|---------|-----------|---------|\n| Creation | `Create<Entity>Dto` | `CreateExecutionDto` |\n| Update | `Update<Entity>Dto` | `UpdateUserDto` |\n| Query parameters | `Query<Entity>Dto` | `QueryExecutionsDto` |\n| Response | `<Entity>ResponseDto` (or inline) | `ExecutionResponseDto` |",
+          "tokensEst": 79,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 79,
+            "cumulative": 79,
+            "risk": 0,
+            "density": 26.333333333333332
+          }
+        },
+        {
+          "id": "domain.rules.validation_decorators",
+          "source": "domain.rules.md",
+          "title": "Validation Decorators",
+          "headingNumber": "4.3",
+          "level": 3,
+          "content": "Every DTO MUST use `class-validator` decorators:\n\n```typescript\nimport { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';\nimport { Expose, Transform } from 'class-transformer';\n```\n\n- Required fields: `@IsString()`, `@IsInt()`, etc.\n- Optional fields: `@IsOptional()` + type decorator\n- Numeric constraints: `@Min(0)`, `@Max(100)`\n- String length: `@MinLength(1)`, `@MaxLength(255)`",
+          "tokensEst": 100,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 100,
+            "cumulative": 100,
+            "risk": 0,
+            "density": 33.333333333333336
+          }
+        },
+        {
+          "id": "domain.rules.transformation",
+          "source": "domain.rules.md",
+          "title": "Transformation",
+          "headingNumber": "4.4",
+          "level": 3,
+          "content": "Use `class-transformer` where needed:\n\n```typescript\n@Expose()           // Include in serialization\n@Transform(...)     // Value transformation\n```\n\nValidation and transformation are applied at the controller boundary via `ValidationPipe` (global).",
+          "tokensEst": 63,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 63,
+            "cumulative": 63,
+            "risk": 0,
+            "density": 21
+          }
+        },
+        {
+          "id": "domain.rules.shared_dtos",
+          "source": "domain.rules.md",
+          "title": "Shared DTOs",
+          "headingNumber": "4.5",
+          "level": 3,
+          "content": "- Simple pagination, ID params, or status filters should use shared types from `shared/`\n- Complex module-specific DTOs live in their own module's `dto/` directory",
+          "tokensEst": 41,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 41,
+            "cumulative": 41,
+            "risk": 0,
+            "density": 13.666666666666666
+          }
+        },
+        {
+          "id": "domain.rules.reference_templates_2",
+          "source": "domain.rules.md",
+          "title": "Reference Templates",
+          "headingNumber": "4.6",
+          "level": 3,
+          "content": "Canonical DTO examples:\n- `recommendation/dto/create-recommendation.dto.ts`\n- `recommendation/dto/accuracy-query.dto.ts`\n- `evaluation/dto/create-execution.dto.ts`\n- `evaluation/dto/query-metrics.dto.ts`",
+          "tokensEst": 51,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 51,
+            "cumulative": 51,
+            "risk": 0,
+            "density": 17
+          }
+        },
+        {
+          "id": "domain.rules.shared_utilities",
+          "source": "domain.rules.md",
+          "title": "Shared Utilities",
+          "headingNumber": "5",
+          "level": 2,
+          "content": "### 5.1 Directory Structure\n\n```\nsrc/shared/\n├── shared.module.ts         # NestJS @Module exporting shared providers\n├── filters/\n│   └── http-exception.filter.ts   # Centralized error handling\n├── interceptors/\n│   └── transform.interceptor.ts   # Response transformation\n├── prisma/\n│   └── prisma.service.ts          # Single Prisma client instance\n└── utils/\n    └── confidence-interval.util.ts # Pure utility functions\n```\n\n### 5.2 PrismaService\n\n- `PrismaService` is the SINGLE canonical Prisma client\n- Never create duplicate Prisma client instances\n- Import via `SharedModule` export — never instantiate directly\n- Extends `PrismaClient` with `OnModuleInit` lifecycle hook\n\n### 5.3 Adding Shared Code\n\nNew shared utilities require:\n1. Placed in appropriate subdirectory (`utils/`, `types/`, etc.)\n2. Exported from `SharedModule` providers\n3. Pure functions where possible (no side effects)\n4. Unit test coverage ≥80%\n\n**Do NOT use `SharedModule` as a dumping ground.** Ask: \"Is this utility used by ≥2 modules?\" If only 1 module needs it, keep it colocated.\n\n### 5.4 Shared Types\n\n- Global TypeScript types used across modules go in `shared/`\n- Module-specific types stay in their module's `interfaces/` directory\n\n### 5.5 Existing Shared Utilities\n\n| File | Purpose |\n|------|---------|\n| `prisma.service.ts` | Prisma client singleton |\n| `http-exception.filter.ts` | Centralized exception filter |\n| `transform.interceptor.ts` | Response transform interceptor |\n| `confidence-interval.util.ts` | Statistical CI computation |\n\n---\n\n**End of Domain Rules**",
+          "tokensEst": 392,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 392,
+            "cumulative": 392,
+            "risk": 0,
+            "density": 130.66666666666666
+          }
+        },
+        {
+          "id": "domain.rules.directory_structure",
+          "source": "domain.rules.md",
+          "title": "Directory Structure",
+          "headingNumber": "5.1",
+          "level": 3,
+          "content": "```\nsrc/shared/\n├── shared.module.ts         # NestJS @Module exporting shared providers\n├── filters/\n│   └── http-exception.filter.ts   # Centralized error handling\n├── interceptors/\n│   └── transform.interceptor.ts   # Response transformation\n├── prisma/\n│   └── prisma.service.ts          # Single Prisma client instance\n└── utils/\n    └── confidence-interval.util.ts # Pure utility functions\n```",
+          "tokensEst": 100,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 100,
+            "cumulative": 100,
+            "risk": 0,
+            "density": 33.333333333333336
+          }
+        },
+        {
+          "id": "domain.rules.prismaservice",
+          "source": "domain.rules.md",
+          "title": "PrismaService",
+          "headingNumber": "5.2",
+          "level": 3,
+          "content": "- `PrismaService` is the SINGLE canonical Prisma client\n- Never create duplicate Prisma client instances\n- Import via `SharedModule` export — never instantiate directly\n- Extends `PrismaClient` with `OnModuleInit` lifecycle hook",
+          "tokensEst": 57,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 57,
+            "cumulative": 57,
+            "risk": 0,
+            "density": 19
+          }
+        },
+        {
+          "id": "domain.rules.adding_shared_code",
+          "source": "domain.rules.md",
+          "title": "Adding Shared Code",
+          "headingNumber": "5.3",
+          "level": 3,
+          "content": "New shared utilities require:\n1. Placed in appropriate subdirectory (`utils/`, `types/`, etc.)\n2. Exported from `SharedModule` providers\n3. Pure functions where possible (no side effects)\n4. Unit test coverage ≥80%\n\n**Do NOT use `SharedModule` as a dumping ground.** Ask: \"Is this utility used by ≥2 modules?\" If only 1 module needs it, keep it colocated.",
+          "tokensEst": 89,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 89,
+            "cumulative": 89,
+            "risk": 0,
+            "density": 29.666666666666668
+          }
+        },
+        {
+          "id": "domain.rules.shared_types",
+          "source": "domain.rules.md",
+          "title": "Shared Types",
+          "headingNumber": "5.4",
+          "level": 3,
+          "content": "- Global TypeScript types used across modules go in `shared/`\n- Module-specific types stay in their module's `interfaces/` directory",
+          "tokensEst": 33,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 33,
+            "cumulative": 33,
+            "risk": 0,
+            "density": 11
+          }
+        },
+        {
+          "id": "domain.rules.existing_shared_utilities",
+          "source": "domain.rules.md",
+          "title": "Existing Shared Utilities",
+          "headingNumber": "5.5",
+          "level": 3,
+          "content": "| File | Purpose |\n|------|---------|\n| `prisma.service.ts` | Prisma client singleton |\n| `http-exception.filter.ts` | Centralized exception filter |\n| `transform.interceptor.ts` | Response transform interceptor |\n| `confidence-interval.util.ts` | Statistical CI computation |\n\n---\n\n**End of Domain Rules**",
+          "tokensEst": 77,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 77,
+            "cumulative": 77,
+            "risk": 0,
+            "density": 25.666666666666668
+          }
+        }
+      ]
+    },
+    {
+      "file": "execution/execution.rules.md",
+      "tags": [
+        "backend",
+        "infra",
+        "devops"
+      ],
+      "sections": [
+        {
+          "id": "execution.rules.header",
+          "source": "execution.rules.md",
+          "title": "Document Header",
+          "level": 1,
+          "content": "# Execution Rules",
+          "tokensEst": 5,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 5,
+            "cumulative": 5,
+            "risk": 0,
+            "density": 1.6666666666666667
+          }
+        },
+        {
+          "id": "execution.rules.purpose",
+          "source": "execution.rules.md",
+          "title": "Purpose",
+          "headingNumber": "1",
+          "level": 2,
+          "content": "Defines the build process, Docker conventions, and development workflow for the Floweng backend.\n\n---",
+          "tokensEst": 26,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 26,
+            "cumulative": 26,
+            "risk": 0,
+            "density": 8.666666666666666
+          }
+        },
+        {
+          "id": "execution.rules.build_process",
+          "source": "execution.rules.md",
+          "title": "Build Process",
+          "headingNumber": "2",
+          "level": 2,
+          "content": "### 2.1 Build Commands\n\n| Command | Purpose | When to Run |\n|---------|---------|-------------|\n| `npm run build` | Compile NestJS TypeScript to JavaScript | Always before commit |\n| `npx prisma generate` | Generate Prisma client from schema | After schema changes |\n| `npx prisma migrate dev` | Apply schema migrations in development | After model changes |\n| `npx prisma migrate deploy` | Apply migrations in production/CI | CI/CD deployment |\n\n### 2.2 Build Order\n\n```\n1. npx prisma generate     # Generate client (if schema changed)\n2. npm run build            # Compile TypeScript\n3. npx jest --passWithNoTests  # Run tests (verify build integrity)\n```\n\n### 2.3 Prisma Migrations\n\n- Migration naming: `snake_case_descriptive_name` (e.g., `add_evaluation_models`)\n- Always review the generated migration SQL before applying\n- Never edit generated migration files directly — use `prisma migrate dev --create-only` for custom SQL\n- Migration status: `npx prisma migrate status`\n\n### 2.4 Docker Build\n\n```bash\ndocker compose up -d --build app    # Rebuild and start app container\ndocker compose down                  # Stop all containers\ndocker compose logs -f               # Follow container logs\n```\n\n### 2.5 Build Output\n\n- Compiled output: `backend/dist/` — **GENERATED** per ADR-008\n- Never commit `dist/` to version control\n- Never modify `dist/` files directly\n\n### 2.6 Build Failure Recovery\n\n| Error | Action |\n|-------|--------|\n| TypeScript compilation error | Fix type issues, check imports |\n| Prisma client error | Run `npx prisma generate` |\n| Module not found | Check `npm install`, verify imports |\n| Migration pending | Run `npx prisma migrate dev` |",
+          "tokensEst": 418,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 418,
+            "cumulative": 418,
+            "risk": 0,
+            "density": 139.33333333333334
+          }
+        },
+        {
+          "id": "execution.rules.build_commands",
+          "source": "execution.rules.md",
+          "title": "Build Commands",
+          "headingNumber": "2.1",
+          "level": 3,
+          "content": "| Command | Purpose | When to Run |\n|---------|---------|-------------|\n| `npm run build` | Compile NestJS TypeScript to JavaScript | Always before commit |\n| `npx prisma generate` | Generate Prisma client from schema | After schema changes |\n| `npx prisma migrate dev` | Apply schema migrations in development | After model changes |\n| `npx prisma migrate deploy` | Apply migrations in production/CI | CI/CD deployment |",
+          "tokensEst": 106,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 106,
+            "cumulative": 106,
+            "risk": 0,
+            "density": 35.333333333333336
+          }
+        },
+        {
+          "id": "execution.rules.build_order",
+          "source": "execution.rules.md",
+          "title": "Build Order",
+          "headingNumber": "2.2",
+          "level": 3,
+          "content": "```\n1. npx prisma generate     # Generate client (if schema changed)\n2. npm run build            # Compile TypeScript\n3. npx jest --passWithNoTests  # Run tests (verify build integrity)\n```",
+          "tokensEst": 48,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 48,
+            "cumulative": 48,
+            "risk": 0,
+            "density": 16
+          }
+        },
+        {
+          "id": "execution.rules.prisma_migrations",
+          "source": "execution.rules.md",
+          "title": "Prisma Migrations",
+          "headingNumber": "2.3",
+          "level": 3,
+          "content": "- Migration naming: `snake_case_descriptive_name` (e.g., `add_evaluation_models`)\n- Always review the generated migration SQL before applying\n- Never edit generated migration files directly — use `prisma migrate dev --create-only` for custom SQL\n- Migration status: `npx prisma migrate status`",
+          "tokensEst": 74,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 74,
+            "cumulative": 74,
+            "risk": 0,
+            "density": 24.666666666666668
+          }
+        },
+        {
+          "id": "execution.rules.docker_build",
+          "source": "execution.rules.md",
+          "title": "Docker Build",
+          "headingNumber": "2.4",
+          "level": 3,
+          "content": "```bash\ndocker compose up -d --build app    # Rebuild and start app container\ndocker compose down                  # Stop all containers\ndocker compose logs -f               # Follow container logs\n```",
+          "tokensEst": 51,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 51,
+            "cumulative": 51,
+            "risk": 0,
+            "density": 17
+          }
+        },
+        {
+          "id": "execution.rules.build_output",
+          "source": "execution.rules.md",
+          "title": "Build Output",
+          "headingNumber": "2.5",
+          "level": 3,
+          "content": "- Compiled output: `backend/dist/` — **GENERATED** per ADR-008\n- Never commit `dist/` to version control\n- Never modify `dist/` files directly",
+          "tokensEst": 36,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 36,
+            "cumulative": 36,
+            "risk": 0,
+            "density": 12
+          }
+        },
+        {
+          "id": "execution.rules.build_failure_recovery",
+          "source": "execution.rules.md",
+          "title": "Build Failure Recovery",
+          "headingNumber": "2.6",
+          "level": 3,
+          "content": "| Error | Action |\n|-------|--------|\n| TypeScript compilation error | Fix type issues, check imports |\n| Prisma client error | Run `npx prisma generate` |\n| Module not found | Check `npm install`, verify imports |\n| Migration pending | Run `npx prisma migrate dev` |",
+          "tokensEst": 67,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 67,
+            "cumulative": 67,
+            "risk": 0,
+            "density": 22.333333333333332
+          }
+        },
+        {
+          "id": "execution.rules.docker_conventions",
+          "source": "execution.rules.md",
+          "title": "Docker Conventions",
+          "headingNumber": "3",
+          "level": 2,
+          "content": "### 3.1 Container Architecture\n\n```\n┌─────────────────────┐     ┌─────────────────────┐\n│   engflow (app)     │◄────│  floweng-db (pg)    │\n│   Node.js 20        │     │  PostgreSQL 16      │\n│   Port 3001         │     │  Port 5432          │\n└─────────────────────┘     └─────────────────────┘\n```\n\n### 3.2 Docker Compose (`backend/docker-compose.yml`)\n\n| Service | Image | Container Name | Port |\n|---------|-------|----------------|------|\n| `postgres` | postgres:16-alpine | `floweng-db` | 5432 |\n| `app` | Dockerfile (multi-stage) | `engflow` | 3001 |\n\n**Environment Variables:**\n\n| Variable | Service | Purpose |\n|----------|---------|---------|\n| `POSTGRES_USER=floweng` | postgres | Database user |\n| `POSTGRES_PASSWORD=floweng` | postgres | Database password |\n| `POSTGRES_DB=floweng` | postgres | Database name |\n| `DATABASE_URL` | app | Full PostgreSQL connection string |\n| `JWT_SECRET` | app | JWT signing secret |\n| `JWT_EXPIRES_IN=7d` | app | JWT token expiry |\n| `PORT=3001` | app | Application listen port |\n\n### 3.3 Health Checks\n\nPostgreSQL service MUST have a health check:\n\n```yaml\nhealthcheck:\n  test: ['CMD-SHELL', 'pg_isready -U floweng -d floweng']\n  interval: 5s\n  timeout: 5s\n  retries: 5\n```\n\nThe app service depends on PostgreSQL health: `condition: service_healthy`.\n\n### 3.4 Volume Management\n\n```bash\n# Named volume for persistence\nvolumes:\n  pgdata:    # Stops container → data survives\n             # docker compose down -v → data deleted\n\n# View volume location\ndocker volume inspect engflow_pgdata\n```\n\n### 3.5 Common Commands\n\n```bash\ndocker compose up -d              # Start all services\ndocker compose up -d --build app  # Rebuild and start app\ndocker compose logs -f            # View logs\ndocker compose logs -f app        # View app logs\ndocker compose down               # Stop all services\ndocker compose down -v            # Stop and delete volumes (⚠️ destroys data)\n```\n\n### 3.6 Production vs Development\n\n- **Development:** Docker Compose with hot-reload via mounted volumes (future)\n- **Production:** Multi-stage Dockerfile, minimized image, non-root user (`nestjs`)\n- Never use development credentials (`floweng/floweng`) in production\n- Never expose `DATABASE_URL` without encryption in production",
+          "tokensEst": 563,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 563,
+            "cumulative": 563,
+            "risk": 0,
+            "density": 187.66666666666666
+          }
+        },
+        {
+          "id": "execution.rules.container_architecture",
+          "source": "execution.rules.md",
+          "title": "Container Architecture",
+          "headingNumber": "3.1",
+          "level": 3,
+          "content": "```\n┌─────────────────────┐     ┌─────────────────────┐\n│   engflow (app)     │◄────│  floweng-db (pg)    │\n│   Node.js 20        │     │  PostgreSQL 16      │\n│   Port 3001         │     │  Port 5432          │\n└─────────────────────┘     └─────────────────────┘\n```",
+          "tokensEst": 67,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 67,
+            "cumulative": 67,
+            "risk": 0,
+            "density": 22.333333333333332
+          }
+        },
+        {
+          "id": "execution.rules.docker_compose_backend_docker_compose_yml",
+          "source": "execution.rules.md",
+          "title": "Docker Compose (`backend/docker-compose.yml`)",
+          "headingNumber": "3.2",
+          "level": 3,
+          "content": "| Service | Image | Container Name | Port |\n|---------|-------|----------------|------|\n| `postgres` | postgres:16-alpine | `floweng-db` | 5432 |\n| `app` | Dockerfile (multi-stage) | `engflow` | 3001 |\n\n**Environment Variables:**\n\n| Variable | Service | Purpose |\n|----------|---------|---------|\n| `POSTGRES_USER=floweng` | postgres | Database user |\n| `POSTGRES_PASSWORD=floweng` | postgres | Database password |\n| `POSTGRES_DB=floweng` | postgres | Database name |\n| `DATABASE_URL` | app | Full PostgreSQL connection string |\n| `JWT_SECRET` | app | JWT signing secret |\n| `JWT_EXPIRES_IN=7d` | app | JWT token expiry |\n| `PORT=3001` | app | Application listen port |",
+          "tokensEst": 168,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 168,
+            "cumulative": 168,
+            "risk": 0,
+            "density": 56
+          }
+        },
+        {
+          "id": "execution.rules.health_checks",
+          "source": "execution.rules.md",
+          "title": "Health Checks",
+          "headingNumber": "3.3",
+          "level": 3,
+          "content": "PostgreSQL service MUST have a health check:\n\n```yaml\nhealthcheck:\n  test: ['CMD-SHELL', 'pg_isready -U floweng -d floweng']\n  interval: 5s\n  timeout: 5s\n  retries: 5\n```\n\nThe app service depends on PostgreSQL health: `condition: service_healthy`.",
+          "tokensEst": 62,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 62,
+            "cumulative": 62,
+            "risk": 0,
+            "density": 20.666666666666668
+          }
+        },
+        {
+          "id": "execution.rules.volume_management",
+          "source": "execution.rules.md",
+          "title": "Volume Management",
+          "headingNumber": "3.4",
+          "level": 3,
+          "content": "```bash\n# Named volume for persistence\nvolumes:\n  pgdata:    # Stops container → data survives\n             # docker compose down -v → data deleted\n\n# View volume location\ndocker volume inspect engflow_pgdata\n```",
+          "tokensEst": 53,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 53,
+            "cumulative": 53,
+            "risk": 0,
+            "density": 17.666666666666668
+          }
+        },
+        {
+          "id": "execution.rules.common_commands",
+          "source": "execution.rules.md",
+          "title": "Common Commands",
+          "headingNumber": "3.5",
+          "level": 3,
+          "content": "```bash\ndocker compose up -d              # Start all services\ndocker compose up -d --build app  # Rebuild and start app\ndocker compose logs -f            # View logs\ndocker compose logs -f app        # View app logs\ndocker compose down               # Stop all services\ndocker compose down -v            # Stop and delete volumes (⚠️ destroys data)\n```",
+          "tokensEst": 89,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 89,
+            "cumulative": 89,
+            "risk": 0,
+            "density": 29.666666666666668
+          }
+        },
+        {
+          "id": "execution.rules.production_vs_development",
+          "source": "execution.rules.md",
+          "title": "Production vs Development",
+          "headingNumber": "3.6",
+          "level": 3,
+          "content": "- **Development:** Docker Compose with hot-reload via mounted volumes (future)\n- **Production:** Multi-stage Dockerfile, minimized image, non-root user (`nestjs`)\n- Never use development credentials (`floweng/floweng`) in production\n- Never expose `DATABASE_URL` without encryption in production",
+          "tokensEst": 74,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 74,
+            "cumulative": 74,
+            "risk": 0,
+            "density": 24.666666666666668
+          }
+        },
+        {
+          "id": "execution.rules.workflow_conventions",
+          "source": "execution.rules.md",
+          "title": "Workflow Conventions",
+          "headingNumber": "4",
+          "level": 2,
+          "content": "### 4.1 Development Workflow\n\n```\n1. Start Docker services           docker compose up -d\n2. Ensure Prisma client is current  npx prisma generate\n3. Check migration status           npx prisma migrate status\n4. Implement changes               (per task requirements)\n5. Run build                       npm run build\n6. Run tests                       npx jest --passWithNoTests\n7. Update work queue                .kilo/docs/work_queue.md\n```\n\n### 4.2 Execution Contract\n\nAll changes MUST follow the canonical execution DAG (Execution Contract §2):\n\n```\nREQUEST → ROUTER → PLAN → ARCH → PRE_VERIFY → CODE → POST_VERIFY → COMMIT\n```\n\n- No bypassing gates without explicit human approval\n- CODE retry limited to max 1 per POST_VERIFY FAIL\n- ARCH revision limited to max 1 per BLOCK\n- Router is the single entry point for all requests\n\n### 4.3 Branching\n\n- Branches are managed via git worktrees (Agent Manager creates these automatically)\n- Worktree naming: human-readable slug (e.g., `thoughtful-coconut`)\n- Base branch: `main`\n- Never commit directly to `main`\n- One worktree per independent task\n\n### 4.4 Commit Message Format\n\n```\nTASK-XXX — Brief descriptive title\n\nOptional details explaining the what and why.\n```\n\nExamples:\n```\nTASK-025 — Implement Agent Evaluation Harness v1\nTASK-022 — Seed recommendations + trust score fixes\n```\n\n### 4.5 Task Tracking\n\n- Task status tracked in `.kilo/docs/work_queue.md`\n- Each completed task adds a `### TASK-XXX` entry with:\n  - Status and date\n  - Steps executed\n  - Key results (metrics, file counts, test results)\n  - Conclusion\n- Active tasks listed in the `## Active` section\n\n### 4.6 Rule Files\n\n- All rule files go in `.kilo/rules/<category>/<name>.rules.md`\n- Lifecycle declaration required on all new rule files (ADR-008)\n- Rules must NOT contradict higher-priority sources (Constitution, ADRs, System Contracts)\n- Rule updates follow the same execution pipeline as code changes\n\n---\n\n**End of Execution Rules**",
+          "tokensEst": 492,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 492,
+            "cumulative": 638,
+            "risk": 0,
+            "density": 164
+          }
+        },
+        {
+          "id": "execution.rules.development_workflow",
+          "source": "execution.rules.md",
+          "title": "Development Workflow",
+          "headingNumber": "4.1",
+          "level": 3,
+          "content": "```\n1. Start Docker services           docker compose up -d\n2. Ensure Prisma client is current  npx prisma generate\n3. Check migration status           npx prisma migrate status\n4. Implement changes               (per task requirements)\n5. Run build                       npm run build\n6. Run tests                       npx jest --passWithNoTests\n7. Update work queue                .kilo/docs/work_queue.md\n```",
+          "tokensEst": 103,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 103,
+            "cumulative": 103,
+            "risk": 0,
+            "density": 34.333333333333336
+          }
+        },
+        {
+          "id": "execution.rules.execution_contract",
+          "source": "execution.rules.md",
+          "title": "Execution Contract",
+          "headingNumber": "4.2",
+          "level": 3,
+          "content": "All changes MUST follow the canonical execution DAG (Execution Contract §2):\n\n```\nREQUEST → ROUTER → PLAN → ARCH → PRE_VERIFY → CODE → POST_VERIFY → COMMIT\n```\n\n- No bypassing gates without explicit human approval\n- CODE retry limited to max 1 per POST_VERIFY FAIL\n- ARCH revision limited to max 1 per BLOCK\n- Router is the single entry point for all requests",
+          "tokensEst": 90,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 90,
+            "cumulative": 236,
+            "risk": 0,
+            "density": 30
+          }
+        },
+        {
+          "id": "execution.rules.branching",
+          "source": "execution.rules.md",
+          "title": "Branching",
+          "headingNumber": "4.3",
+          "level": 3,
+          "content": "- Branches are managed via git worktrees (Agent Manager creates these automatically)\n- Worktree naming: human-readable slug (e.g., `thoughtful-coconut`)\n- Base branch: `main`\n- Never commit directly to `main`\n- One worktree per independent task",
+          "tokensEst": 61,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 61,
+            "cumulative": 61,
+            "risk": 0,
+            "density": 20.333333333333332
+          }
+        },
+        {
+          "id": "execution.rules.commit_message_format",
+          "source": "execution.rules.md",
+          "title": "Commit Message Format",
+          "headingNumber": "4.4",
+          "level": 3,
+          "content": "```\nTASK-XXX — Brief descriptive title\n\nOptional details explaining the what and why.\n```\n\nExamples:\n```\nTASK-025 — Implement Agent Evaluation Harness v1\nTASK-022 — Seed recommendations + trust score fixes\n```",
+          "tokensEst": 53,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 53,
+            "cumulative": 53,
+            "risk": 0,
+            "density": 17.666666666666668
+          }
+        },
+        {
+          "id": "execution.rules.task_tracking",
+          "source": "execution.rules.md",
+          "title": "Task Tracking",
+          "headingNumber": "4.5",
+          "level": 3,
+          "content": "- Task status tracked in `.kilo/docs/work_queue.md`\n- Each completed task adds a `### TASK-XXX` entry with:\n  - Status and date\n  - Steps executed\n  - Key results (metrics, file counts, test results)\n  - Conclusion\n- Active tasks listed in the `## Active` section",
+          "tokensEst": 66,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 66,
+            "cumulative": 66,
+            "risk": 0,
+            "density": 22
+          }
+        },
+        {
+          "id": "execution.rules.rule_files",
+          "source": "execution.rules.md",
+          "title": "Rule Files",
+          "headingNumber": "4.6",
+          "level": 3,
+          "content": "- All rule files go in `.kilo/rules/<category>/<name>.rules.md`\n- Lifecycle declaration required on all new rule files (ADR-008)\n- Rules must NOT contradict higher-priority sources (Constitution, ADRs, System Contracts)\n- Rule updates follow the same execution pipeline as code changes\n\n---\n\n**End of Execution Rules**",
+          "tokensEst": 80,
+          "tags": [
+            "backend",
+            "infra",
+            "devops"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 80,
+            "cumulative": 80,
+            "risk": 0,
+            "density": 26.666666666666668
+          }
+        }
+      ]
+    },
+    {
+      "file": "performance/performance.rules.md",
+      "tags": [
+        "backend",
+        "architecture",
+        "database"
+      ],
+      "sections": [
+        {
+          "id": "performance.rules.header",
+          "source": "performance.rules.md",
+          "title": "Document Header",
+          "level": 1,
+          "content": "# Performance Rules",
+          "tokensEst": 5,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 5,
+            "cumulative": 5,
+            "risk": 0,
+            "density": 1.6666666666666667
+          }
+        },
+        {
+          "id": "performance.rules.purpose",
+          "source": "performance.rules.md",
+          "title": "Purpose",
+          "headingNumber": "1",
+          "level": 2,
+          "content": "Defines API response time targets, database query optimization, and caching conventions for the Floweng backend.\n\n---",
+          "tokensEst": 30,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 30,
+            "cumulative": 30,
+            "risk": 0,
+            "density": 10
+          }
+        },
+        {
+          "id": "performance.rules.api_performance",
+          "source": "performance.rules.md",
+          "title": "API Performance",
+          "headingNumber": "2",
+          "level": 2,
+          "content": "### 2.1 Response Time Targets\n\n| Endpoint Type | p50 Target | p95 Target | Measurement |\n|---------------|-----------|-----------|-------------|\n| Read (single entity) | <100ms | <300ms | Response time, no auth overhead |\n| Read (list) | <200ms | <500ms | Including pagination overhead |\n| Write (create) | <200ms | <500ms | Including validation + DB write |\n| Write (update) | <200ms | <500ms | Including validation + DB write |\n| Write (bulk) | <500ms | <2s | Including transaction overhead |\n| Auth (login/register) | <300ms | <1s | Including password hashing |\n\n### 2.2 Pagination Rules\n\n| List Size | Requirement | Implementation |\n|-----------|-------------|----------------|\n| ≤100 items | No pagination required | Simple `findMany()` |\n| 100–10,000 items | Offset pagination | `skip`/`take` |\n| >10,000 items | Cursor pagination | Deferred — implement when needed |\n\nDefault page size: 20 items. Max page size: 100 items.\n\n### 2.3 Response Size Optimization\n\n- Never return entire entity objects when only subsets are needed\n- Use `select` in Prisma queries to limit returned fields\n- For list endpoints, prefer flat DTOs over deeply nested structures\n- Consider `@Transform` to exclude null/empty fields from response\n\n### 2.4 N+1 Prevention\n\nWatch for N+1 at these common boundaries:\n- Controller → Service loop calling Prisma (batch the queries)\n- Service → nested relation access (use `include` or batch)\n- Serialization with lazy-loaded relations (eager-load or exclude)\n\n### 2.5 Endpoint Design for Performance\n\n- Dedicated endpoints > generic over-fetching endpoints\n- `POST /api/v1/recommendations/trust-scores/recalculate` >\n  `PUT /api/v1/recommendations/:id?recalculateTrustScores=true`\n- Batch endpoints > multiple single-call endpoints\n- Async processing (cron/scheduler) > synchronous computation for heavy operations\n\n### 2.6 Current Performance Baseline\n\nMeasured from TASK-021 smoke tests:\n- Auth register: ~150ms (create user + hash password + generate JWT)\n- Auth login: ~100ms (verify password + generate JWT)\n- User profile: ~50ms (single user lookup)",
+          "tokensEst": 520,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 520,
+            "cumulative": 520,
+            "risk": 0,
+            "density": 173.33333333333334
+          }
+        },
+        {
+          "id": "performance.rules.response_time_targets",
+          "source": "performance.rules.md",
+          "title": "Response Time Targets",
+          "headingNumber": "2.1",
+          "level": 3,
+          "content": "| Endpoint Type | p50 Target | p95 Target | Measurement |\n|---------------|-----------|-----------|-------------|\n| Read (single entity) | <100ms | <300ms | Response time, no auth overhead |\n| Read (list) | <200ms | <500ms | Including pagination overhead |\n| Write (create) | <200ms | <500ms | Including validation + DB write |\n| Write (update) | <200ms | <500ms | Including validation + DB write |\n| Write (bulk) | <500ms | <2s | Including transaction overhead |\n| Auth (login/register) | <300ms | <1s | Including password hashing |",
+          "tokensEst": 134,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 134,
+            "cumulative": 134,
+            "risk": 0,
+            "density": 44.666666666666664
+          }
+        },
+        {
+          "id": "performance.rules.pagination_rules",
+          "source": "performance.rules.md",
+          "title": "Pagination Rules",
+          "headingNumber": "2.2",
+          "level": 3,
+          "content": "| List Size | Requirement | Implementation |\n|-----------|-------------|----------------|\n| ≤100 items | No pagination required | Simple `findMany()` |\n| 100–10,000 items | Offset pagination | `skip`/`take` |\n| >10,000 items | Cursor pagination | Deferred — implement when needed |\n\nDefault page size: 20 items. Max page size: 100 items.",
+          "tokensEst": 85,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 85,
+            "cumulative": 85,
+            "risk": 0,
+            "density": 28.333333333333332
+          }
+        },
+        {
+          "id": "performance.rules.response_size_optimization",
+          "source": "performance.rules.md",
+          "title": "Response Size Optimization",
+          "headingNumber": "2.3",
+          "level": 3,
+          "content": "- Never return entire entity objects when only subsets are needed\n- Use `select` in Prisma queries to limit returned fields\n- For list endpoints, prefer flat DTOs over deeply nested structures\n- Consider `@Transform` to exclude null/empty fields from response",
+          "tokensEst": 65,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 65,
+            "cumulative": 65,
+            "risk": 0,
+            "density": 21.666666666666668
+          }
+        },
+        {
+          "id": "performance.rules.n_1_prevention",
+          "source": "performance.rules.md",
+          "title": "N+1 Prevention",
+          "headingNumber": "2.4",
+          "level": 3,
+          "content": "Watch for N+1 at these common boundaries:\n- Controller → Service loop calling Prisma (batch the queries)\n- Service → nested relation access (use `include` or batch)\n- Serialization with lazy-loaded relations (eager-load or exclude)",
+          "tokensEst": 58,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 58,
+            "cumulative": 58,
+            "risk": 0,
+            "density": 19.333333333333332
+          }
+        },
+        {
+          "id": "performance.rules.endpoint_design_for_performance",
+          "source": "performance.rules.md",
+          "title": "Endpoint Design for Performance",
+          "headingNumber": "2.5",
+          "level": 3,
+          "content": "- Dedicated endpoints > generic over-fetching endpoints\n- `POST /api/v1/recommendations/trust-scores/recalculate` >\n  `PUT /api/v1/recommendations/:id?recalculateTrustScores=true`\n- Batch endpoints > multiple single-call endpoints\n- Async processing (cron/scheduler) > synchronous computation for heavy operations",
+          "tokensEst": 79,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 79,
+            "cumulative": 79,
+            "risk": 0,
+            "density": 26.333333333333332
+          }
+        },
+        {
+          "id": "performance.rules.current_performance_baseline",
+          "source": "performance.rules.md",
+          "title": "Current Performance Baseline",
+          "headingNumber": "2.6",
+          "level": 3,
+          "content": "Measured from TASK-021 smoke tests:\n- Auth register: ~150ms (create user + hash password + generate JWT)\n- Auth login: ~100ms (verify password + generate JWT)\n- User profile: ~50ms (single user lookup)",
+          "tokensEst": 51,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 51,
+            "cumulative": 51,
+            "risk": 0,
+            "density": 17
+          }
+        },
+        {
+          "id": "performance.rules.database_query_performance",
+          "source": "performance.rules.md",
+          "title": "Database Query Performance",
+          "headingNumber": "3",
+          "level": 2,
+          "content": "### 3.1 Field Selection\n\nAlways use `select` to fetch only the fields you need:\n\n```typescript\n// ❌ Bad: fetches all fields\nconst users = await prisma.user.findMany();\n\n// ✅ Good: fetches only required fields\nconst users = await prisma.user.findMany({\n  select: { id: true, email: true, name: true },\n});\n```\n\n### 3.2 Relation Loading\n\n```typescript\n// ❌ Bad: N+1 query — loads relations lazily in a loop\nconst users = await prisma.user.findMany();\nfor (const user of users) {\n  const lessons = await prisma.userLesson.findMany({ where: { userId: user.id } });\n}\n\n// ✅ Good: use include for eager loading (when all children needed)\nconst users = await prisma.user.findMany({\n  include: { userLessons: true },\n});\n\n// ✅ Better: batch loading with dedicated queries\nconst users = await prisma.user.findMany();\nconst userIds = users.map(u => u.id);\nconst lessons = await prisma.userLesson.findMany({\n  where: { userId: { in: userIds } },\n});\n```\n\n### 3.3 Indexing Rules\n\nAdd indexes based on query patterns:\n\n```prisma\n// Single-field index for frequent where/orderBy columns\n@@index([email])\n\n// Compound index for multi-field filters\n@@index([status, createdAt])\n\n// FK indexes for relation joins\n@@index([userId])\n\n// Unique compound for pair uniqueness\n@@unique([userId, lessonId])\n```\n\nCheck `npx prisma validate` after schema changes to verify index coverage.\n\n### 3.4 Pagination\n\nAll list endpoints returning >100 items MUST use pagination:\n\n```typescript\nconst items = await prisma.recommendation.findMany({\n  skip: (page - 1) * limit,\n  take: limit,\n  orderBy: { createdAt: 'desc' },\n});\n```\n\nUse cursor-based pagination for high-throughput endpoints (deferred — implement when needed).\n\n### 3.5 Batch Operations\n\n```typescript\n// Batch create (one transaction, one query)\nawait prisma.exercise.createMany({\n  data: exercises,\n});\n\n// Batch update with transaction\nawait prisma.$transaction(\n  updates.map(u => prisma.user.update({ where: { id: u.id }, data: u.data }))\n);\n```\n\n### 3.6 Query Logging (Development)\n\n```typescript\n// In PrismaService constructor\nnew PrismaClient({\n  log: ['query', 'info', 'warn', 'error'],\n});\n```\n\nProfile slow queries in development (`prisma:query` log shows duration).",
+          "tokensEst": 553,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 553,
+            "cumulative": 553,
+            "risk": 0,
+            "density": 184.33333333333334
+          }
+        },
+        {
+          "id": "performance.rules.field_selection",
+          "source": "performance.rules.md",
+          "title": "Field Selection",
+          "headingNumber": "3.1",
+          "level": 3,
+          "content": "Always use `select` to fetch only the fields you need:\n\n```typescript\n// ❌ Bad: fetches all fields\nconst users = await prisma.user.findMany();\n\n// ✅ Good: fetches only required fields\nconst users = await prisma.user.findMany({\n  select: { id: true, email: true, name: true },\n});\n```",
+          "tokensEst": 71,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 71,
+            "cumulative": 71,
+            "risk": 0,
+            "density": 23.666666666666668
+          }
+        },
+        {
+          "id": "performance.rules.relation_loading",
+          "source": "performance.rules.md",
+          "title": "Relation Loading",
+          "headingNumber": "3.2",
+          "level": 3,
+          "content": "```typescript\n// ❌ Bad: N+1 query — loads relations lazily in a loop\nconst users = await prisma.user.findMany();\nfor (const user of users) {\n  const lessons = await prisma.userLesson.findMany({ where: { userId: user.id } });\n}\n\n// ✅ Good: use include for eager loading (when all children needed)\nconst users = await prisma.user.findMany({\n  include: { userLessons: true },\n});\n\n// ✅ Better: batch loading with dedicated queries\nconst users = await prisma.user.findMany();\nconst userIds = users.map(u => u.id);\nconst lessons = await prisma.userLesson.findMany({\n  where: { userId: { in: userIds } },\n});\n```",
+          "tokensEst": 152,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 152,
+            "cumulative": 152,
+            "risk": 0,
+            "density": 50.666666666666664
+          }
+        },
+        {
+          "id": "performance.rules.indexing_rules",
+          "source": "performance.rules.md",
+          "title": "Indexing Rules",
+          "headingNumber": "3.3",
+          "level": 3,
+          "content": "Add indexes based on query patterns:\n\n```prisma\n// Single-field index for frequent where/orderBy columns\n@@index([email])\n\n// Compound index for multi-field filters\n@@index([status, createdAt])\n\n// FK indexes for relation joins\n@@index([userId])\n\n// Unique compound for pair uniqueness\n@@unique([userId, lessonId])\n```\n\nCheck `npx prisma validate` after schema changes to verify index coverage.",
+          "tokensEst": 99,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 99,
+            "cumulative": 99,
+            "risk": 0,
+            "density": 33
+          }
+        },
+        {
+          "id": "performance.rules.pagination",
+          "source": "performance.rules.md",
+          "title": "Pagination",
+          "headingNumber": "3.4",
+          "level": 3,
+          "content": "All list endpoints returning >100 items MUST use pagination:\n\n```typescript\nconst items = await prisma.recommendation.findMany({\n  skip: (page - 1) * limit,\n  take: limit,\n  orderBy: { createdAt: 'desc' },\n});\n```\n\nUse cursor-based pagination for high-throughput endpoints (deferred — implement when needed).",
+          "tokensEst": 77,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 77,
+            "cumulative": 77,
+            "risk": 0,
+            "density": 25.666666666666668
+          }
+        },
+        {
+          "id": "performance.rules.batch_operations",
+          "source": "performance.rules.md",
+          "title": "Batch Operations",
+          "headingNumber": "3.5",
+          "level": 3,
+          "content": "```typescript\n// Batch create (one transaction, one query)\nawait prisma.exercise.createMany({\n  data: exercises,\n});\n\n// Batch update with transaction\nawait prisma.$transaction(\n  updates.map(u => prisma.user.update({ where: { id: u.id }, data: u.data }))\n);\n```",
+          "tokensEst": 66,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 66,
+            "cumulative": 66,
+            "risk": 0,
+            "density": 22
+          }
+        },
+        {
+          "id": "performance.rules.query_logging_development",
+          "source": "performance.rules.md",
+          "title": "Query Logging (Development)",
+          "headingNumber": "3.6",
+          "level": 3,
+          "content": "```typescript\n// In PrismaService constructor\nnew PrismaClient({\n  log: ['query', 'info', 'warn', 'error'],\n});\n```\n\nProfile slow queries in development (`prisma:query` log shows duration).",
+          "tokensEst": 48,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 48,
+            "cumulative": 48,
+            "risk": 0,
+            "density": 16
+          }
+        },
+        {
+          "id": "performance.rules.caching_conventions",
+          "source": "performance.rules.md",
+          "title": "Caching Conventions",
+          "headingNumber": "4",
+          "level": 2,
+          "content": "### 4.1 Current State\n\n**No caching infrastructure** is currently deployed. Per Constitution §7 (Simplicity) and the monolith-first principle, caching should only be introduced when there is measurable evidence of a caching-needy bottleneck.\n\n### 4.2 Caching Decision Tree\n\nBefore implementing caching, answer:\n\n```\n1. Is there a measured performance problem?    → No → Stop. Don't cache.\n   ↓ Yes\n2. Can the query be optimized instead?         → Yes → Optimize query. Don't cache.\n   ↓ No\n3. Is the data read > write by ≥10:1?          → No → Cache will stale frequently. Don't cache.\n   ↓ Yes\n4. Can in-memory cache meet the requirement?   → Yes → Use NestJS in-memory cache (no Redis).\n   ↓ No\n5. Is Redis the right solution?                → Evaluate. Requires ADR for new dependency.\n```\n\n### 4.3 In-Memory Cache (First Choice)\n\n```typescript\nimport { Injectable, Inject } from '@nestjs/common';\nimport { CACHE_MANAGER } from '@nestjs/cache-manager';\nimport { Cache } from 'cache-manager';\n\n@Injectable()\nexport class MyService {\n  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}\n\n  async getData(key: string) {\n    const cached = await this.cacheManager.get(key);\n    if (cached) return cached;\n\n    const data = await this.fetchExpensiveData(key);\n    await this.cacheManager.set(key, data, 300_000); // 5 min TTL\n    return data;\n  }\n}\n```\n\n### 4.4 Cache Invalidation\n\n- Each cached entity MUST have a documented invalidation strategy\n- Invalidate on write (cache-aside pattern): `set()` after write, or `del()` to invalidate\n- Never use time-based expiration alone for cache consistency\n\n### 4.5 Prohibited Patterns\n\n- No caching of user-specific data without user-scoped cache keys\n- No caching without a documented TTL\n- No caching without invalidation strategy\n- No Redis without an ADR\n\n### 4.6 Monitoring\n\nWhen caching is implemented, add:\n- Cache hit/miss ratio metrics\n- Cache size tracking\n- Invalidation rate tracking\n- Stale data detection (warn when serving cached data beyond expected freshness)\n\n---\n\n**End of Performance Rules**",
+          "tokensEst": 518,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 518,
+            "cumulative": 770,
+            "risk": 0.007499999999999996,
+            "density": 172.66666666666666
+          }
+        },
+        {
+          "id": "performance.rules.current_state",
+          "source": "performance.rules.md",
+          "title": "Current State",
+          "headingNumber": "4.1",
+          "level": 3,
+          "content": "**No caching infrastructure** is currently deployed. Per Constitution §7 (Simplicity) and the monolith-first principle, caching should only be introduced when there is measurable evidence of a caching-needy bottleneck.",
+          "tokensEst": 55,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 55,
+            "cumulative": 307,
+            "risk": 0.007499999999999996,
+            "density": 18.333333333333332
+          }
+        },
+        {
+          "id": "performance.rules.caching_decision_tree",
+          "source": "performance.rules.md",
+          "title": "Caching Decision Tree",
+          "headingNumber": "4.2",
+          "level": 3,
+          "content": "Before implementing caching, answer:\n\n```\n1. Is there a measured performance problem?    → No → Stop. Don't cache.\n   ↓ Yes\n2. Can the query be optimized instead?         → Yes → Optimize query. Don't cache.\n   ↓ No\n3. Is the data read > write by ≥10:1?          → No → Cache will stale frequently. Don't cache.\n   ↓ Yes\n4. Can in-memory cache meet the requirement?   → Yes → Use NestJS in-memory cache (no Redis).\n   ↓ No\n5. Is Redis the right solution?                → Evaluate. Requires ADR for new dependency.\n```",
+          "tokensEst": 130,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 130,
+            "cumulative": 130,
+            "risk": 0,
+            "density": 43.333333333333336
+          }
+        },
+        {
+          "id": "performance.rules.in_memory_cache_first_choice",
+          "source": "performance.rules.md",
+          "title": "In-Memory Cache (First Choice)",
+          "headingNumber": "4.3",
+          "level": 3,
+          "content": "```typescript\nimport { Injectable, Inject } from '@nestjs/common';\nimport { CACHE_MANAGER } from '@nestjs/cache-manager';\nimport { Cache } from 'cache-manager';\n\n@Injectable()\nexport class MyService {\n  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}\n\n  async getData(key: string) {\n    const cached = await this.cacheManager.get(key);\n    if (cached) return cached;\n\n    const data = await this.fetchExpensiveData(key);\n    await this.cacheManager.set(key, data, 300_000); // 5 min TTL\n    return data;\n  }\n}\n```",
+          "tokensEst": 133,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 133,
+            "cumulative": 133,
+            "risk": 0,
+            "density": 44.333333333333336
+          }
+        },
+        {
+          "id": "performance.rules.cache_invalidation",
+          "source": "performance.rules.md",
+          "title": "Cache Invalidation",
+          "headingNumber": "4.4",
+          "level": 3,
+          "content": "- Each cached entity MUST have a documented invalidation strategy\n- Invalidate on write (cache-aside pattern): `set()` after write, or `del()` to invalidate\n- Never use time-based expiration alone for cache consistency",
+          "tokensEst": 55,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 55,
+            "cumulative": 55,
+            "risk": 0,
+            "density": 18.333333333333332
+          }
+        },
+        {
+          "id": "performance.rules.prohibited_patterns",
+          "source": "performance.rules.md",
+          "title": "Prohibited Patterns",
+          "headingNumber": "4.5",
+          "level": 3,
+          "content": "- No caching of user-specific data without user-scoped cache keys\n- No caching without a documented TTL\n- No caching without invalidation strategy\n- No Redis without an ADR",
+          "tokensEst": 43,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 43,
+            "cumulative": 43,
+            "risk": 0,
+            "density": 14.333333333333334
+          }
+        },
+        {
+          "id": "performance.rules.monitoring",
+          "source": "performance.rules.md",
+          "title": "Monitoring",
+          "headingNumber": "4.6",
+          "level": 3,
+          "content": "When caching is implemented, add:\n- Cache hit/miss ratio metrics\n- Cache size tracking\n- Invalidation rate tracking\n- Stale data detection (warn when serving cached data beyond expected freshness)\n\n---\n\n**End of Performance Rules**",
+          "tokensEst": 58,
+          "tags": [
+            "backend",
+            "architecture",
+            "database"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 58,
+            "cumulative": 58,
+            "risk": 0,
+            "density": 19.333333333333332
+          }
+        }
+      ]
+    },
+    {
+      "file": "quality/quality.rules.md",
+      "tags": [
+        "backend",
+        "coding",
+        "testing"
+      ],
+      "sections": [
+        {
+          "id": "quality.rules.header",
+          "source": "quality.rules.md",
+          "title": "Document Header",
+          "level": 1,
+          "content": "# Quality Rules",
+          "tokensEst": 4,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 4,
+            "cumulative": 4,
+            "risk": 0,
+            "density": 1.3333333333333333
+          }
+        },
+        {
+          "id": "quality.rules.purpose",
+          "source": "quality.rules.md",
+          "title": "Purpose",
+          "headingNumber": "1",
+          "level": 2,
+          "content": "Defines TypeScript coding standards, style rules, code review checklist, and testing practices for the Floweng codebase.\n\n---",
+          "tokensEst": 32,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 32,
+            "cumulative": 32,
+            "risk": 0,
+            "density": 10.666666666666666
+          }
+        },
+        {
+          "id": "quality.rules.typescript_configuration",
+          "source": "quality.rules.md",
+          "title": "TypeScript Configuration",
+          "headingNumber": "2",
+          "level": 2,
+          "content": "- **Strict mode required** (Constitution §4): `strict: true` in `tsconfig.json`\n- No `any` types — use `unknown` with type guards when the type is not known\n- Explicit return types on all public methods\n- Prefer `interface` over `type` for object shapes (use `type` for unions/intersections)",
+          "tokensEst": 73,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 73,
+            "cumulative": 305,
+            "risk": 0.007499999999999996,
+            "density": 24.333333333333332
+          }
+        },
+        {
+          "id": "quality.rules.prohibited_patterns_constitution_4",
+          "source": "quality.rules.md",
+          "title": "Prohibited Patterns (Constitution §4)",
+          "headingNumber": "3",
+          "level": 2,
+          "content": "| Pattern | Reason | Replacement |\n|---------|--------|-------------|\n| `any` type | Type safety violation | `unknown` + type guard |\n| `console.log()` | Production noise | NestJS `Logger` service |\n| Function with >40 lines | Maintainability | Break into smaller functions |\n| `// @ts-ignore` | Suppresses real errors | Fix the type issue |",
+          "tokensEst": 86,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 86,
+            "cumulative": 86,
+            "risk": 0,
+            "density": 28.666666666666668
+          }
+        },
+        {
+          "id": "quality.rules.imports",
+          "source": "quality.rules.md",
+          "title": "Imports",
+          "headingNumber": "4",
+          "level": 2,
+          "content": "Group imports in this order, separated by blank lines:\n\n```typescript\n// 1. External/NestJS imports\nimport { Injectable } from '@nestjs/common';\nimport { PrismaService } from '../shared/prisma/prisma.service';\n\n// 2. Internal module imports\nimport { Recommendation } from './interfaces/recommendation.interface';\n```\n\n- Prefer named exports over default exports\n- Use path aliases from `tsconfig.json` where available",
+          "tokensEst": 105,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 105,
+            "cumulative": 105,
+            "risk": 0,
+            "density": 35
+          }
+        },
+        {
+          "id": "quality.rules.async_patterns",
+          "source": "quality.rules.md",
+          "title": "Async Patterns",
+          "headingNumber": "5",
+          "level": 2,
+          "content": "- Always use `async/await` over raw `.then()` chains\n- Never forget `await` in async functions — use `eslint@typescript-eslint/no-floating-promises`\n- Handle Promise rejections with try/catch\n- Use `Promise.all()` for parallel independent async operations",
+          "tokensEst": 64,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 64,
+            "cumulative": 64,
+            "risk": 0,
+            "density": 21.333333333333332
+          }
+        },
+        {
+          "id": "quality.rules.error_handling",
+          "source": "quality.rules.md",
+          "title": "Error Handling",
+          "headingNumber": "6",
+          "level": 2,
+          "content": "- Controllers: let NestJS exception filters handle errors (never try/catch in controllers for expected flow)\n- Services: throw NestJS `HttpException` subclasses (`NotFoundException`, `BadRequestException`, etc.)\n- Catch unexpected errors at service boundaries and convert to typed exceptions\n- Never expose internal error details to clients",
+          "tokensEst": 85,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 85,
+            "cumulative": 85,
+            "risk": 0,
+            "density": 28.333333333333332
+          }
+        },
+        {
+          "id": "quality.rules.nestjs_best_practices",
+          "source": "quality.rules.md",
+          "title": "NestJS Best Practices",
+          "headingNumber": "7",
+          "level": 2,
+          "content": "- `@Injectable()` on all services\n- `@Controller()` with path prefix matching module name\n- Use NestJS lifecycle hooks (`OnModuleInit`, `OnModuleDestroy`) for connection management\n- Prefer constructor injection over `@Inject()` decorator\n- Use `@Req()` and `@Res()` only when absolutely necessary (prefer decorators)",
+          "tokensEst": 80,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 80,
+            "cumulative": 80,
+            "risk": 0,
+            "density": 26.666666666666668
+          }
+        },
+        {
+          "id": "quality.rules.code_review_checklist",
+          "source": "quality.rules.md",
+          "title": "Code Review Checklist",
+          "headingNumber": "8",
+          "level": 2,
+          "content": "### 8.1 Pre-Review Requirements\n\nBefore starting a review, confirm:\n- [ ] Build passes (`npm run build` zero errors)\n- [ ] All unit tests pass (`npx jest --passWithNoTests`)\n- [ ] Lint passes (if lint configured)\n- [ ] Changes are scoped to the task requirements\n\n### 8.2 Correctness\n- [ ] Does the code implement the specified requirements?\n- [ ] Are edge cases handled (null, empty, boundary values)?\n- [ ] Are error states propagated correctly?\n- [ ] Is the async/await chain correct (no swallowed promises)?\n\n### 8.3 Constitution Compliance\n- [ ] No `any` types — `unknown` with type guards preferred (Constitution §4)\n- [ ] No `console.log` in production code (Constitution §4)\n- [ ] DTOs use `class-validator` decorators (Constitution §4)\n- [ ] Module boundaries respected (Constitution §5)\n- [ ] Controllers handle HTTP only, services contain business logic (Constitution §5)\n\n### 8.4 ADR Compliance\n- [ ] Schema changes follow Prisma conventions (ADR-002/003 patterns)\n- [ ] Lifecycle declarations on all new files (ADR-008)\n\n### 8.5 Security\n- [ ] User input validated at controller boundary\n- [ ] Auth guards applied to protected endpoints\n- [ ] No sensitive data in logs or error responses\n- [ ] No SQL injection vectors (Prisma parameterized queries — verify raw queries)\n\n### 8.6 Maintainability\n- [ ] No unnecessary abstractions\n- [ ] Follows existing module patterns\n- [ ] Functions have clear single responsibility\n- [ ] Naming is descriptive and consistent with codebase\n\n### 8.7 Testing\n- [ ] Tests added/updated for new functionality\n- [ ] Existing tests still pass\n- [ ] Error cases covered\n- [ ] No `.only` or `.skip` in test files\n\n### 8.8 Review Outcome\n\n| Outcome | Action |\n|---------|--------|\n| PASS | Route to COMMIT |\n| FLAG | Route to COMMIT with documented concerns |\n| FAIL | Route back to CODE with specific issues |",
+          "tokensEst": 463,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 463,
+            "cumulative": 742,
+            "risk": 0.011999999999999993,
+            "density": 154.33333333333334
+          }
+        },
+        {
+          "id": "quality.rules.pre_review_requirements",
+          "source": "quality.rules.md",
+          "title": "Pre-Review Requirements",
+          "headingNumber": "8.1",
+          "level": 3,
+          "content": "Before starting a review, confirm:\n- [ ] Build passes (`npm run build` zero errors)\n- [ ] All unit tests pass (`npx jest --passWithNoTests`)\n- [ ] Lint passes (if lint configured)\n- [ ] Changes are scoped to the task requirements",
+          "tokensEst": 58,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 58,
+            "cumulative": 58,
+            "risk": 0,
+            "density": 19.333333333333332
+          }
+        },
+        {
+          "id": "quality.rules.correctness",
+          "source": "quality.rules.md",
+          "title": "Correctness",
+          "headingNumber": "8.2",
+          "level": 3,
+          "content": "- [ ] Does the code implement the specified requirements?\n- [ ] Are edge cases handled (null, empty, boundary values)?\n- [ ] Are error states propagated correctly?\n- [ ] Is the async/await chain correct (no swallowed promises)?",
+          "tokensEst": 57,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 57,
+            "cumulative": 57,
+            "risk": 0,
+            "density": 19
+          }
+        },
+        {
+          "id": "quality.rules.constitution_compliance",
+          "source": "quality.rules.md",
+          "title": "Constitution Compliance",
+          "headingNumber": "8.3",
+          "level": 3,
+          "content": "- [ ] No `any` types — `unknown` with type guards preferred (Constitution §4)\n- [ ] No `console.log` in production code (Constitution §4)\n- [ ] DTOs use `class-validator` decorators (Constitution §4)\n- [ ] Module boundaries respected (Constitution §5)\n- [ ] Controllers handle HTTP only, services contain business logic (Constitution §5)",
+          "tokensEst": 85,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 85,
+            "cumulative": 364,
+            "risk": 0.011999999999999993,
+            "density": 28.333333333333332
+          }
+        },
+        {
+          "id": "quality.rules.adr_compliance",
+          "source": "quality.rules.md",
+          "title": "ADR Compliance",
+          "headingNumber": "8.4",
+          "level": 3,
+          "content": "- [ ] Schema changes follow Prisma conventions (ADR-002/003 patterns)\n- [ ] Lifecycle declarations on all new files (ADR-008)",
+          "tokensEst": 32,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 32,
+            "cumulative": 32,
+            "risk": 0,
+            "density": 10.666666666666666
+          }
+        },
+        {
+          "id": "quality.rules.security",
+          "source": "quality.rules.md",
+          "title": "Security",
+          "headingNumber": "8.5",
+          "level": 3,
+          "content": "- [ ] User input validated at controller boundary\n- [ ] Auth guards applied to protected endpoints\n- [ ] No sensitive data in logs or error responses\n- [ ] No SQL injection vectors (Prisma parameterized queries — verify raw queries)",
+          "tokensEst": 58,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 58,
+            "cumulative": 58,
+            "risk": 0,
+            "density": 19.333333333333332
+          }
+        },
+        {
+          "id": "quality.rules.maintainability",
+          "source": "quality.rules.md",
+          "title": "Maintainability",
+          "headingNumber": "8.6",
+          "level": 3,
+          "content": "- [ ] No unnecessary abstractions\n- [ ] Follows existing module patterns\n- [ ] Functions have clear single responsibility\n- [ ] Naming is descriptive and consistent with codebase",
+          "tokensEst": 45,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 45,
+            "cumulative": 45,
+            "risk": 0,
+            "density": 15
+          }
+        },
+        {
+          "id": "quality.rules.testing",
+          "source": "quality.rules.md",
+          "title": "Testing",
+          "headingNumber": "8.7",
+          "level": 3,
+          "content": "- [ ] Tests added/updated for new functionality\n- [ ] Existing tests still pass\n- [ ] Error cases covered\n- [ ] No `.only` or `.skip` in test files",
+          "tokensEst": 37,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 37,
+            "cumulative": 37,
+            "risk": 0,
+            "density": 12.333333333333334
+          }
+        },
+        {
+          "id": "quality.rules.review_outcome",
+          "source": "quality.rules.md",
+          "title": "Review Outcome",
+          "headingNumber": "8.8",
+          "level": 3,
+          "content": "| Outcome | Action |\n|---------|--------|\n| PASS | Route to COMMIT |\n| FLAG | Route to COMMIT with documented concerns |\n| FAIL | Route back to CODE with specific issues |",
+          "tokensEst": 43,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 43,
+            "cumulative": 43,
+            "risk": 0,
+            "density": 14.333333333333334
+          }
+        },
+        {
+          "id": "quality.rules.testing_standards",
+          "source": "quality.rules.md",
+          "title": "Testing Standards",
+          "headingNumber": "9",
+          "level": 2,
+          "content": "### 9.1 Test Framework\n\n- **Runner:** Jest\n- **HTTP assertions:** Supertest\n- **Location:** Unit tests colocated in `src/<module>/__tests__/`\n- **Naming:** `<name>.spec.ts` for unit tests, `<name>.e2e-spec.ts` for E2E tests\n\n### 9.2 Coverage Thresholds\n\n| Layer | Minimum Coverage | Measurement |\n|-------|-----------------|-------------|\n| Service layer | ≥80% | Line coverage (Constitution §6) |\n| Controller layer | ≥70% | Line coverage |\n| DTO/validation | ≥60% | Line coverage (key transforms) |\n| Overall project | ≥70% | Line coverage |\n\n### 9.3 Test Types\n\n**Unit Tests (Required)**\n- Every service method must have at least one unit test\n- Mock Prisma using `PrismaService` mock factory pattern\n- Test both happy path and error/edge cases\n- Tests must be independent: no shared mutable state, no test ordering dependencies\n\n**Integration Tests (Recommended for multi-module changes)**\n- Place in `test/integration/`\n- Test cross-module interactions through controller endpoints\n- Use real PostgreSQL via Docker Compose\n\n**E2E Tests (Required for API contract changes)**\n- Place in `test/e2e/`\n- Test full request → response cycle including auth, guards, and validation\n- Run against a running Docker Compose stack\n\n### 9.4 Test Patterns\n\n```typescript\ndescribe('<ServiceName>', () => {\n  describe('<methodName>', () => {\n    it('should <expected behavior> when <condition>', async () => {\n      // Arrange\n      // Act\n      // Assert\n    });\n\n    it('should throw <error> when <edge case>', async () => {\n      // ...\n    });\n  });\n});\n```\n\n### 9.5 Prohibited Patterns\n\n- `test.skip` or `describe.skip` — never commit skipped tests\n- `test.only` — never commit focused tests\n- `console.log` in test output — clean test output required\n- Tests that depend on execution order — must be hermetic\n- Snapshot tests on unstable output (dates, UUIDs, random values)\n\n### 9.6 Running Tests\n\n| Command | Purpose |\n|---------|---------|\n| `npx jest --passWithNoTests` | Run all unit tests |\n| `npx jest --coverage` | Run with coverage report |\n| `npx jest --watch` | Watch mode for development |\n| `npx jest <pattern>` | Run specific test file |\n\n---\n\n**End of Quality Rules**",
+          "tokensEst": 544,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 544,
+            "cumulative": 834,
+            "risk": 0.007499999999999996,
+            "density": 181.33333333333334
+          }
+        },
+        {
+          "id": "quality.rules.test_framework",
+          "source": "quality.rules.md",
+          "title": "Test Framework",
+          "headingNumber": "9.1",
+          "level": 3,
+          "content": "- **Runner:** Jest\n- **HTTP assertions:** Supertest\n- **Location:** Unit tests colocated in `src/<module>/__tests__/`\n- **Naming:** `<name>.spec.ts` for unit tests, `<name>.e2e-spec.ts` for E2E tests",
+          "tokensEst": 50,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 50,
+            "cumulative": 50,
+            "risk": 0,
+            "density": 16.666666666666668
+          }
+        },
+        {
+          "id": "quality.rules.coverage_thresholds",
+          "source": "quality.rules.md",
+          "title": "Coverage Thresholds",
+          "headingNumber": "9.2",
+          "level": 3,
+          "content": "| Layer | Minimum Coverage | Measurement |\n|-------|-----------------|-------------|\n| Service layer | ≥80% | Line coverage (Constitution §6) |\n| Controller layer | ≥70% | Line coverage |\n| DTO/validation | ≥60% | Line coverage (key transforms) |\n| Overall project | ≥70% | Line coverage |",
+          "tokensEst": 73,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 73,
+            "cumulative": 363,
+            "risk": 0.007499999999999996,
+            "density": 24.333333333333332
+          }
+        },
+        {
+          "id": "quality.rules.test_types",
+          "source": "quality.rules.md",
+          "title": "Test Types",
+          "headingNumber": "9.3",
+          "level": 3,
+          "content": "**Unit Tests (Required)**\n- Every service method must have at least one unit test\n- Mock Prisma using `PrismaService` mock factory pattern\n- Test both happy path and error/edge cases\n- Tests must be independent: no shared mutable state, no test ordering dependencies\n\n**Integration Tests (Recommended for multi-module changes)**\n- Place in `test/integration/`\n- Test cross-module interactions through controller endpoints\n- Use real PostgreSQL via Docker Compose\n\n**E2E Tests (Required for API contract changes)**\n- Place in `test/e2e/`\n- Test full request → response cycle including auth, guards, and validation\n- Run against a running Docker Compose stack",
+          "tokensEst": 165,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 165,
+            "cumulative": 165,
+            "risk": 0,
+            "density": 55
+          }
+        },
+        {
+          "id": "quality.rules.test_patterns",
+          "source": "quality.rules.md",
+          "title": "Test Patterns",
+          "headingNumber": "9.4",
+          "level": 3,
+          "content": "```typescript\ndescribe('<ServiceName>', () => {\n  describe('<methodName>', () => {\n    it('should <expected behavior> when <condition>', async () => {\n      // Arrange\n      // Act\n      // Assert\n    });\n\n    it('should throw <error> when <edge case>', async () => {\n      // ...\n    });\n  });\n});\n```",
+          "tokensEst": 76,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 76,
+            "cumulative": 76,
+            "risk": 0,
+            "density": 25.333333333333332
+          }
+        },
+        {
+          "id": "quality.rules.prohibited_patterns",
+          "source": "quality.rules.md",
+          "title": "Prohibited Patterns",
+          "headingNumber": "9.5",
+          "level": 3,
+          "content": "- `test.skip` or `describe.skip` — never commit skipped tests\n- `test.only` — never commit focused tests\n- `console.log` in test output — clean test output required\n- Tests that depend on execution order — must be hermetic\n- Snapshot tests on unstable output (dates, UUIDs, random values)",
+          "tokensEst": 72,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 72,
+            "cumulative": 72,
+            "risk": 0,
+            "density": 24
+          }
+        },
+        {
+          "id": "quality.rules.running_tests",
+          "source": "quality.rules.md",
+          "title": "Running Tests",
+          "headingNumber": "9.6",
+          "level": 3,
+          "content": "| Command | Purpose |\n|---------|---------|\n| `npx jest --passWithNoTests` | Run all unit tests |\n| `npx jest --coverage` | Run with coverage report |\n| `npx jest --watch` | Watch mode for development |\n| `npx jest <pattern>` | Run specific test file |\n\n---\n\n**End of Quality Rules**",
+          "tokensEst": 71,
+          "tags": [
+            "backend",
+            "coding",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 71,
+            "cumulative": 71,
+            "risk": 0,
+            "density": 23.666666666666668
+          }
+        }
+      ]
+    },
+    {
+      "file": "system/contracts/execution.contract.md",
+      "tags": [
+        "all"
+      ],
+      "sections": [
+        {
+          "id": "execution.contract.header",
+          "source": "execution.contract.md",
+          "title": "Document Header",
+          "level": 1,
+          "content": "# Execution Contract",
+          "tokensEst": 5,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 5,
+            "cumulative": 5,
+            "risk": 0,
+            "density": 5
+          }
+        },
+        {
+          "id": "execution.contract.purpose",
+          "source": "execution.contract.md",
+          "title": "Purpose",
+          "headingNumber": "1",
+          "level": 2,
+          "content": "Defines the canonical execution state machine for Floweng AI Software Factory.\nThis contract governs all agent transitions, execution lock semantics, and terminal states.\n\n---",
+          "tokensEst": 44,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 44,
+            "cumulative": 44,
+            "risk": 0,
+            "density": 44
+          }
+        },
+        {
+          "id": "execution.contract.state_machine",
+          "source": "execution.contract.md",
+          "title": "State Machine",
+          "headingNumber": "2",
+          "level": 2,
+          "content": "### 2.1 Valid Transitions (DAG)\n\n```\n                  ┌──────────┐\n                  │  REQUEST │\n                  └────┬─────┘\n                       │\n                       ▼\n                  ┌──────────┐\n                  │  ROUTER  │\n                  └────┬─────┘\n                       │\n              ┌────────┼────────┐\n              ▼        ▼        ▼\n        ┌─────────┐ ┌──────┐ ┌──────────┐\n        │  PLAN   │ │ CODE │ │  ARCH    │\n        │(L2/L3)  │ │ (L1) │ │  (L3)    │\n        └────┬────┘ └──┬───┘ └────┬─────┘\n             │         │          │\n             ▼         │          ▼\n        ┌─────────┐    │    ┌──────────┐\n        │  ARCH   │    │    │  PLAN    │\n        │(opt)    │    │    │(revision)│\n        └────┬────┘    │    └────┬─────┘\n             │         │         │\n             ▼         │         ▼\n        ┌──────────────┼──────────────┐\n        │  PRE_VERIFY  │◄─────────────┘\n        └──────┬───────┘\n               │\n       ┌───────┼───────┐\n       ▼       ▼       ▼\n   ┌──────┐ ┌──────┐ ┌────────┐\n   │PASS  │ │FLAG  │ │ BLOCK  │\n   └──┬───┘ └──┬───┘ └───┬────┘\n      │        │         │\n      ▼        │         ▼\n  ┌──────┐     │    ┌──────────┐\n  │ CODE │     │    │  ARCH    │\n  └──┬───┘     │    └──────────┘\n     │         │\n     ▼         ▼\n  ┌────────────────┐\n  │  POST_VERIFY   │\n  └───────┬────────┘\n          │\n    ┌─────┼─────┐\n    ▼     ▼     ▼\n  ┌───┐ ┌────┐ ┌──────┐\n  │PAS│ │FLAG│ │FAIL  │\n  └─┬─┘ └─┬──┘ └──┬───┘\n    │     │       │\n    ▼     │    ┌──┴──────────┐\n┌──────┐  │    ▼             ▼\n│COMMIT│  │ ┌──────┐   ┌──────────┐\n└──────┘  │ │ CODE │   │  DEBUG   │\n          │ │(retry│   │(escalate │\n          │ │ max 1)│   │ after    │\n          │ └──┬───┘   │ CODE     │\n          ▼    │       │ retry    │\n    ┌──────────┘       │ exhaust) │\n    │  COMMIT  │       └────┬─────┘\n    │ (with    │            │\n    │  flags)  │       ┌────┴────┐\n    └──────────┘       ▼         ▼\n                 ┌────────┐ ┌──────────┐\n                 │  POST  │ │  ARCH    │\n                 │ _VERIFY│ │ (BLOCK)  │\n                 └────────┘ └──────────┘\n```\n\n### 2.2 Allowed Transitions\n\n| From | To | Condition |\n|------|----|-----------|\n| REQUEST | ROUTER | Always |\n| ROUTER | PLAN | LEVEL_2 or LEVEL_3 |\n| ROUTER | CODE | LEVEL_1, simple implementation |\n| ROUTER | ARCH | LEVEL_3, architecture-only |\n| PLAN | ARCH | Architecture review needed |\n| PLAN | PRE_VERIFY | No architecture issues |\n| ARCH | PLAN | Revision needed (max 1) |\n| ARCH | PRE_VERIFY | Architecture approved |\n| PRE_VERIFY | CODE | PASS or FLAG |\n| PRE_VERIFY | ARCH | BLOCK |\n| CODE | POST_VERIFY | Implementation complete |\n| POST_VERIFY | COMMIT | PASS or FLAG |\n| POST_VERIFY | CODE | FAIL (max 1 retry) |\n| POST_VERIFY | debug | FAIL after CODE retry exhausted |\n| POST_VERIFY | ARCH | BLOCK |\n| debug | POST_VERIFY | Fix applied, re-verify |\n| debug | ARCH | BLOCK (cannot fix) |\n\n### 2.3 Forbidden Transitions\n\n| From → To | Reason |\n|-----------|--------|\n| Any → PLAN | After PLAN finalized, no re-planning |\n| CODE → PLAN | Single-pass execution |\n| POST_VERIFY → PLAN | Execution complete |\n| ROUTER → ROUTER | No re-routing |\n| PLAN → PLAN | No re-plan loop |\n| CODE → CODE | No self-loop (except retry from POST_VERIFY) |\n| debug → plan | No re-planning after execution phase |\n| debug → code | DEBUG never delegates back to CODE (prevents delegation loops) |\n| debug → pre_verify | Only POST_VERIFY gates DEBUG output |\n\n---",
+          "tokensEst": 869,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 869,
+            "cumulative": 869,
+            "risk": 0,
+            "density": 869
+          }
+        },
+        {
+          "id": "execution.contract.valid_transitions_dag",
+          "source": "execution.contract.md",
+          "title": "Valid Transitions (DAG)",
+          "headingNumber": "2.1",
+          "level": 3,
+          "content": "```\n                  ┌──────────┐\n                  │  REQUEST │\n                  └────┬─────┘\n                       │\n                       ▼\n                  ┌──────────┐\n                  │  ROUTER  │\n                  └────┬─────┘\n                       │\n              ┌────────┼────────┐\n              ▼        ▼        ▼\n        ┌─────────┐ ┌──────┐ ┌──────────┐\n        │  PLAN   │ │ CODE │ │  ARCH    │\n        │(L2/L3)  │ │ (L1) │ │  (L3)    │\n        └────┬────┘ └──┬───┘ └────┬─────┘\n             │         │          │\n             ▼         │          ▼\n        ┌─────────┐    │    ┌──────────┐\n        │  ARCH   │    │    │  PLAN    │\n        │(opt)    │    │    │(revision)│\n        └────┬────┘    │    └────┬─────┘\n             │         │         │\n             ▼         │         ▼\n        ┌──────────────┼──────────────┐\n        │  PRE_VERIFY  │◄─────────────┘\n        └──────┬───────┘\n               │\n       ┌───────┼───────┐\n       ▼       ▼       ▼\n   ┌──────┐ ┌──────┐ ┌────────┐\n   │PASS  │ │FLAG  │ │ BLOCK  │\n   └──┬───┘ └──┬───┘ └───┬────┘\n      │        │         │\n      ▼        │         ▼\n  ┌──────┐     │    ┌──────────┐\n  │ CODE │     │    │  ARCH    │\n  └──┬───┘     │    └──────────┘\n     │         │\n     ▼         ▼\n  ┌────────────────┐\n  │  POST_VERIFY   │\n  └───────┬────────┘\n          │\n    ┌─────┼─────┐\n    ▼     ▼     ▼\n  ┌───┐ ┌────┐ ┌──────┐\n  │PAS│ │FLAG│ │FAIL  │\n  └─┬─┘ └─┬──┘ └──┬───┘\n    │     │       │\n    ▼     │    ┌──┴──────────┐\n┌──────┐  │    ▼             ▼\n│COMMIT│  │ ┌──────┐   ┌──────────┐\n└──────┘  │ │ CODE │   │  DEBUG   │\n          │ │(retry│   │(escalate │\n          │ │ max 1)│   │ after    │\n          │ └──┬───┘   │ CODE     │\n          ▼    │       │ retry    │\n    ┌──────────┘       │ exhaust) │\n    │  COMMIT  │       └────┬─────┘\n    │ (with    │            │\n    │  flags)  │       ┌────┴────┐\n    └──────────┘       ▼         ▼\n                 ┌────────┐ ┌──────────┐\n                 │  POST  │ │  ARCH    │\n                 │ _VERIFY│ │ (BLOCK)  │\n                 └────────┘ └──────────┘\n```",
+          "tokensEst": 521,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 521,
+            "cumulative": 521,
+            "risk": 0,
+            "density": 521
+          }
+        },
+        {
+          "id": "execution.contract.allowed_transitions",
+          "source": "execution.contract.md",
+          "title": "Allowed Transitions",
+          "headingNumber": "2.2",
+          "level": 3,
+          "content": "| From | To | Condition |\n|------|----|-----------|\n| REQUEST | ROUTER | Always |\n| ROUTER | PLAN | LEVEL_2 or LEVEL_3 |\n| ROUTER | CODE | LEVEL_1, simple implementation |\n| ROUTER | ARCH | LEVEL_3, architecture-only |\n| PLAN | ARCH | Architecture review needed |\n| PLAN | PRE_VERIFY | No architecture issues |\n| ARCH | PLAN | Revision needed (max 1) |\n| ARCH | PRE_VERIFY | Architecture approved |\n| PRE_VERIFY | CODE | PASS or FLAG |\n| PRE_VERIFY | ARCH | BLOCK |\n| CODE | POST_VERIFY | Implementation complete |\n| POST_VERIFY | COMMIT | PASS or FLAG |\n| POST_VERIFY | CODE | FAIL (max 1 retry) |\n| POST_VERIFY | debug | FAIL after CODE retry exhausted |\n| POST_VERIFY | ARCH | BLOCK |\n| debug | POST_VERIFY | Fix applied, re-verify |\n| debug | ARCH | BLOCK (cannot fix) |",
+          "tokensEst": 194,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 194,
+            "cumulative": 194,
+            "risk": 0,
+            "density": 194
+          }
+        },
+        {
+          "id": "execution.contract.forbidden_transitions",
+          "source": "execution.contract.md",
+          "title": "Forbidden Transitions",
+          "headingNumber": "2.3",
+          "level": 3,
+          "content": "| From → To | Reason |\n|-----------|--------|\n| Any → PLAN | After PLAN finalized, no re-planning |\n| CODE → PLAN | Single-pass execution |\n| POST_VERIFY → PLAN | Execution complete |\n| ROUTER → ROUTER | No re-routing |\n| PLAN → PLAN | No re-plan loop |\n| CODE → CODE | No self-loop (except retry from POST_VERIFY) |\n| debug → plan | No re-planning after execution phase |\n| debug → code | DEBUG never delegates back to CODE (prevents delegation loops) |\n| debug → pre_verify | Only POST_VERIFY gates DEBUG output |\n\n---",
+          "tokensEst": 130,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 130,
+            "cumulative": 130,
+            "risk": 0,
+            "density": 130
+          }
+        },
+        {
+          "id": "execution.contract.execution_lock",
+          "source": "execution.contract.md",
+          "title": "Execution Lock",
+          "headingNumber": "3",
+          "level": 2,
+          "content": "### 3.1 Lock States\n\n```\nLOCKED state: PLAN is frozen, No re-planning allowed,\nOnly execution agents can proceed, ROUTER is disabled\n```\n\n### 3.2 Lock Activation\n\nLock activates on \"plan → pre_verify\" (first transition OUT of planning).\n\n### 3.3 Lock Schema\n\n```json\n{\n  \"execution_id\": \"uuid-v7\",\n  \"state\": \"IDLE | ROUTING | PLANNING | LOCKED | EXECUTING | VERIFYING | COMMITTED | BLOCKED\",\n  \"phase\": \"IDLE | ROUTING | PLANNING | ARCH_REVIEWING | PRE_VERIFYING | EXECUTING | POST_VERIFYING | COMMITTED | BLOCKED\",\n  \"plan_hash\": \"sha256 | null\",\n  \"current_agent\": \"router | plan | architect | code | debug | pre_verify | post_verify | null\",\n  \"hop_count\": 0,\n  \"locked\": false,\n  \"timestamp\": \"ISO-8601\",\n  \"retry_count\": { \"code\": 0, \"arch_plan_revision\": 0 }\n}\n```\n\n---",
+          "tokensEst": 194,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 194,
+            "cumulative": 194,
+            "risk": 0,
+            "density": 194
+          }
+        },
+        {
+          "id": "execution.contract.lock_states",
+          "source": "execution.contract.md",
+          "title": "Lock States",
+          "headingNumber": "3.1",
+          "level": 3,
+          "content": "```\nLOCKED state: PLAN is frozen, No re-planning allowed,\nOnly execution agents can proceed, ROUTER is disabled\n```",
+          "tokensEst": 29,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 29,
+            "cumulative": 29,
+            "risk": 0,
+            "density": 29
+          }
+        },
+        {
+          "id": "execution.contract.lock_activation",
+          "source": "execution.contract.md",
+          "title": "Lock Activation",
+          "headingNumber": "3.2",
+          "level": 3,
+          "content": "Lock activates on \"plan → pre_verify\" (first transition OUT of planning).",
+          "tokensEst": 19,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 19,
+            "cumulative": 19,
+            "risk": 0,
+            "density": 19
+          }
+        },
+        {
+          "id": "execution.contract.lock_schema",
+          "source": "execution.contract.md",
+          "title": "Lock Schema",
+          "headingNumber": "3.3",
+          "level": 3,
+          "content": "```json\n{\n  \"execution_id\": \"uuid-v7\",\n  \"state\": \"IDLE | ROUTING | PLANNING | LOCKED | EXECUTING | VERIFYING | COMMITTED | BLOCKED\",\n  \"phase\": \"IDLE | ROUTING | PLANNING | ARCH_REVIEWING | PRE_VERIFYING | EXECUTING | POST_VERIFYING | COMMITTED | BLOCKED\",\n  \"plan_hash\": \"sha256 | null\",\n  \"current_agent\": \"router | plan | architect | code | debug | pre_verify | post_verify | null\",\n  \"hop_count\": 0,\n  \"locked\": false,\n  \"timestamp\": \"ISO-8601\",\n  \"retry_count\": { \"code\": 0, \"arch_plan_revision\": 0 }\n}\n```\n\n---",
+          "tokensEst": 130,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 130,
+            "cumulative": 130,
+            "risk": 0,
+            "density": 130
+          }
+        },
+        {
+          "id": "execution.contract.agent_definitions",
+          "source": "execution.contract.md",
+          "title": "Agent Definitions",
+          "headingNumber": "4",
+          "level": 2,
+          "content": "### 4.1 ROUTER\n\n**Allowed:**\n- → PLAN\n- → CODE (if LEVEL_1 and no planning required)\n- → ARCH (if LEVEL_3 architecture-only)\n\n**Denied:**\n- Any backward transition\n- Re-entry after PLAN\n\n### 4.2 PLAN\n\n**Allowed:**\n- → ARCH (if architecture review needed)\n- → PRE_VERIFY (if no architecture issues)\n\n**Denied:**\n- → CODE directly\n- Any backward transition\n\n### 4.3 ARCH\n\n**Allowed:**\n- → PLAN (revision, max 1)\n- → PRE_VERIFY (approve)\n- → BLOCK (terminal)\n\n### 4.4 PRE_VERIFY\n\n**Allowed:**\n- PASS → CODE\n- FLAG → CODE (with documented concerns)\n- BLOCK → ARCH\n\n### 4.5 CODE\n\n**Allowed:**\n- → POST_VERIFY\n\n**Denied:**\n- → PLAN\n- → ARCH\n- → ROUTER\n\n### 4.6 POST_VERIFY\n\n**Allowed:**\n- PASS → COMMIT\n- FLAG → COMMIT (with documented concerns)\n- FAIL → CODE (retry, max 1)\n- FAIL → debug (after CODE retry exhausted)\n- BLOCK → ARCH\n\n### 4.7 COMMIT\n\n**Actions:**\n- Mark task as DONE\n- Write execution summary\n- Release execution lock\n- Set state to COMMITTED\n\n**Immutability:**\n- No transitions out of COMMIT\n- COMMIT is terminal\n\n### 4.8 DEBUG\n\n**Allowed:**\n- → POST_VERIFY (fix applied)\n- → ARCH (BLOCK — cannot fix)\n\n**Denied:**\n- → PLAN\n- → CODE\n- → ROUTER\n- → PRE_VERIFY\n- → COMMIT (direct)\n\n---",
+          "tokensEst": 299,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 299,
+            "cumulative": 299,
+            "risk": 0,
+            "density": 299
+          }
+        },
+        {
+          "id": "execution.contract.router",
+          "source": "execution.contract.md",
+          "title": "ROUTER",
+          "headingNumber": "4.1",
+          "level": 3,
+          "content": "**Allowed:**\n- → PLAN\n- → CODE (if LEVEL_1 and no planning required)\n- → ARCH (if LEVEL_3 architecture-only)\n\n**Denied:**\n- Any backward transition\n- Re-entry after PLAN",
+          "tokensEst": 43,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 43,
+            "cumulative": 43,
+            "risk": 0,
+            "density": 43
+          }
+        },
+        {
+          "id": "execution.contract.plan",
+          "source": "execution.contract.md",
+          "title": "PLAN",
+          "headingNumber": "4.2",
+          "level": 3,
+          "content": "**Allowed:**\n- → ARCH (if architecture review needed)\n- → PRE_VERIFY (if no architecture issues)\n\n**Denied:**\n- → CODE directly\n- Any backward transition",
+          "tokensEst": 39,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 39,
+            "cumulative": 39,
+            "risk": 0,
+            "density": 39
+          }
+        },
+        {
+          "id": "execution.contract.arch",
+          "source": "execution.contract.md",
+          "title": "ARCH",
+          "headingNumber": "4.3",
+          "level": 3,
+          "content": "**Allowed:**\n- → PLAN (revision, max 1)\n- → PRE_VERIFY (approve)\n- → BLOCK (terminal)",
+          "tokensEst": 22,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 22,
+            "cumulative": 22,
+            "risk": 0,
+            "density": 22
+          }
+        },
+        {
+          "id": "execution.contract.pre_verify",
+          "source": "execution.contract.md",
+          "title": "PRE_VERIFY",
+          "headingNumber": "4.4",
+          "level": 3,
+          "content": "**Allowed:**\n- PASS → CODE\n- FLAG → CODE (with documented concerns)\n- BLOCK → ARCH",
+          "tokensEst": 21,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 21,
+            "cumulative": 21,
+            "risk": 0,
+            "density": 21
+          }
+        },
+        {
+          "id": "execution.contract.code",
+          "source": "execution.contract.md",
+          "title": "CODE",
+          "headingNumber": "4.5",
+          "level": 3,
+          "content": "**Allowed:**\n- → POST_VERIFY\n\n**Denied:**\n- → PLAN\n- → ARCH\n- → ROUTER",
+          "tokensEst": 18,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 18,
+            "cumulative": 18,
+            "risk": 0,
+            "density": 18
+          }
+        },
+        {
+          "id": "execution.contract.post_verify",
+          "source": "execution.contract.md",
+          "title": "POST_VERIFY",
+          "headingNumber": "4.6",
+          "level": 3,
+          "content": "**Allowed:**\n- PASS → COMMIT\n- FLAG → COMMIT (with documented concerns)\n- FAIL → CODE (retry, max 1)\n- FAIL → debug (after CODE retry exhausted)\n- BLOCK → ARCH",
+          "tokensEst": 40,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 40,
+            "cumulative": 40,
+            "risk": 0,
+            "density": 40
+          }
+        },
+        {
+          "id": "execution.contract.commit",
+          "source": "execution.contract.md",
+          "title": "COMMIT",
+          "headingNumber": "4.7",
+          "level": 3,
+          "content": "**Actions:**\n- Mark task as DONE\n- Write execution summary\n- Release execution lock\n- Set state to COMMITTED\n\n**Immutability:**\n- No transitions out of COMMIT\n- COMMIT is terminal",
+          "tokensEst": 45,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 45,
+            "cumulative": 45,
+            "risk": 0,
+            "density": 45
+          }
+        },
+        {
+          "id": "execution.contract.debug",
+          "source": "execution.contract.md",
+          "title": "DEBUG",
+          "headingNumber": "4.8",
+          "level": 3,
+          "content": "**Allowed:**\n- → POST_VERIFY (fix applied)\n- → ARCH (BLOCK — cannot fix)\n\n**Denied:**\n- → PLAN\n- → CODE\n- → ROUTER\n- → PRE_VERIFY\n- → COMMIT (direct)\n\n---",
+          "tokensEst": 39,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 39,
+            "cumulative": 39,
+            "risk": 0,
+            "density": 39
+          }
+        },
+        {
+          "id": "execution.contract.retry_recovery",
+          "source": "execution.contract.md",
+          "title": "Retry & Recovery",
+          "headingNumber": "5",
+          "level": 2,
+          "content": "| Scenario | Action | Max Retries |\n|----------|--------|-------------|\n| CODE → POST_VERIFY FAIL | Return to CODE | 1 |\n| ARCH → PLAN revision | Return to PLAN | 1 |\n| DEBUG → POST_VERIFY FAIL → ARCH | Escalate to ARCH (BLOCK) | 0 |\n| Runtime error during CODE | Auto-retry | 2 |\n| Guard violation | Block + HUMAN | 0 |\n\n---",
+          "tokensEst": 82,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 82,
+            "cumulative": 82,
+            "risk": 0,
+            "density": 82
+          }
+        },
+        {
+          "id": "execution.contract.escalation",
+          "source": "execution.contract.md",
+          "title": "Escalation",
+          "headingNumber": "6",
+          "level": 2,
+          "content": "- PreVerify BLOCK → ARCH\n- PostVerify BLOCK → ARCH\n- Runtime Guard violation → HUMAN\n- Architecture conflict → HUMAN\n- Security issue → HUMAN",
+          "tokensEst": 36,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 36,
+            "cumulative": 36,
+            "risk": 0,
+            "density": 36
+          }
+        }
+      ]
+    },
+    {
+      "file": "system/contracts/source-of-truth.contract.md",
+      "tags": [
+        "all"
+      ],
+      "sections": [
+        {
+          "id": "source-of-truth.contract.header",
+          "source": "source-of-truth.contract.md",
+          "title": "Document Header",
+          "level": 1,
+          "content": "# Source of Truth Hierarchy",
+          "tokensEst": 7,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 7,
+            "cumulative": 7,
+            "risk": 0,
+            "density": 7
+          }
+        },
+        {
+          "id": "source-of-truth.contract.priority_order",
+          "source": "source-of-truth.contract.md",
+          "title": "Priority Order",
+          "level": 2,
+          "content": "| Priority | Source | Authority |\n|----------|--------|-----------|\n| 1 | CI / Automated Validation | Machine-enforced |\n| 2 | ADRs (docs/decisions.md) | Architecture decisions |\n| 3 | Constitution (docs/constitution.md) | Immutable rules |\n| 4 | Architecture (docs/architecture.md) | System design |\n| 5 | Canonical System Contracts (.kilo/rules/system/contracts/) | Runtime enforcement |\n| 6 | Agent Rules (.kilo/rules/agents/) | Agent behavior |\n| 7 | Task Requirements | Current execution |\n| 8 | Codebase | Implementation |",
+          "tokensEst": 132,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 132,
+            "cumulative": 132,
+            "risk": 0,
+            "density": 132
+          }
+        },
+        {
+          "id": "source-of-truth.contract.rules",
+          "source": "source-of-truth.contract.md",
+          "title": "Rules",
+          "level": 2,
+          "content": "- Higher priority overrides lower priority\n- Codebase is never authoritative over contracts\n- Model memory is never authoritative",
+          "tokensEst": 33,
+          "tags": [
+            "all"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 33,
+            "cumulative": 33,
+            "risk": 0,
+            "density": 33
+          }
+        }
+      ]
+    },
+    {
+      "file": "testing/testing.rules.md",
+      "tags": [
+        "backend",
+        "testing"
+      ],
+      "sections": [
+        {
+          "id": "testing.rules.header",
+          "source": "testing.rules.md",
+          "title": "Document Header",
+          "level": 1,
+          "content": "# Testing Rules",
+          "tokensEst": 4,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 4,
+            "cumulative": 4,
+            "risk": 0,
+            "density": 2
+          }
+        },
+        {
+          "id": "testing.rules.purpose",
+          "source": "testing.rules.md",
+          "title": "Purpose",
+          "headingNumber": "1",
+          "level": 2,
+          "content": "Defines how tests are executed, what test environments are required, and how test results are validated.\n\n---",
+          "tokensEst": 28,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 28,
+            "cumulative": 28,
+            "risk": 0,
+            "density": 14
+          }
+        },
+        {
+          "id": "testing.rules.running_tests",
+          "source": "testing.rules.md",
+          "title": "Running Tests",
+          "headingNumber": "2",
+          "level": 2,
+          "content": "### 2.1 Unit Tests\n\n```bash\n# Run all unit tests\nnpx jest --passWithNoTests\n\n# Run with coverage\nnpx jest --coverage\n\n# Run specific test file\nnpx jest path/to/file.spec.ts\n\n# Run tests matching a pattern\nnpx jest -t \"should create execution\"\n\n# Watch mode for TDD\nnpx jest --watch\n```\n\n### 2.2 E2E Tests\n\nE2E tests require a running Docker Compose stack with PostgreSQL:\n\n```bash\n# Ensure Docker is running\ndocker compose up -d\n\n# Run E2E tests\nnpx jest --config test/jest-e2e.json\n\n# Run E2E tests with specific pattern\nnpx jest --config test/jest-e2e.json -t \"recommendation\"\n```",
+          "tokensEst": 146,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 146,
+            "cumulative": 146,
+            "risk": 0,
+            "density": 73
+          }
+        },
+        {
+          "id": "testing.rules.unit_tests",
+          "source": "testing.rules.md",
+          "title": "Unit Tests",
+          "headingNumber": "2.1",
+          "level": 3,
+          "content": "```bash\n# Run all unit tests\nnpx jest --passWithNoTests\n\n# Run with coverage\nnpx jest --coverage\n\n# Run specific test file\nnpx jest path/to/file.spec.ts\n\n# Run tests matching a pattern\nnpx jest -t \"should create execution\"\n\n# Watch mode for TDD\nnpx jest --watch\n```",
+          "tokensEst": 67,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 67,
+            "cumulative": 67,
+            "risk": 0,
+            "density": 33.5
+          }
+        },
+        {
+          "id": "testing.rules.e2e_tests",
+          "source": "testing.rules.md",
+          "title": "E2E Tests",
+          "headingNumber": "2.2",
+          "level": 3,
+          "content": "E2E tests require a running Docker Compose stack with PostgreSQL:\n\n```bash\n# Ensure Docker is running\ndocker compose up -d\n\n# Run E2E tests\nnpx jest --config test/jest-e2e.json\n\n# Run E2E tests with specific pattern\nnpx jest --config test/jest-e2e.json -t \"recommendation\"\n```",
+          "tokensEst": 69,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 69,
+            "cumulative": 69,
+            "risk": 0,
+            "density": 34.5
+          }
+        },
+        {
+          "id": "testing.rules.test_independence",
+          "source": "testing.rules.md",
+          "title": "Test Independence",
+          "headingNumber": "3",
+          "level": 2,
+          "content": "- Every test must be hermetic: no dependency on other tests or execution order\n- Use `beforeEach` to set up fresh state; use `afterEach` to clean up\n- Never share mutable state between tests via module-level variables\n- Use `describe` blocks to organize related tests, not to share state",
+          "tokensEst": 72,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 72,
+            "cumulative": 72,
+            "risk": 0,
+            "density": 36
+          }
+        },
+        {
+          "id": "testing.rules.test_database",
+          "source": "testing.rules.md",
+          "title": "Test Database",
+          "headingNumber": "4",
+          "level": 2,
+          "content": "- Unit tests: mock PrismaService — never hit a real database\n- Integration/E2E tests: use real PostgreSQL via Docker Compose\n- E2E database is ephemeral: `docker compose down -v` removes all data\n- Never point tests at a production database",
+          "tokensEst": 60,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 60,
+            "cumulative": 60,
+            "risk": 0,
+            "density": 30
+          }
+        },
+        {
+          "id": "testing.rules.ci_execution_future",
+          "source": "testing.rules.md",
+          "title": "CI Execution (Future)",
+          "headingNumber": "5",
+          "level": 2,
+          "content": "When CI is configured, the test execution order will be:\n1. Build check\n2. Unit tests (fast feedback)\n3. Integration tests\n4. E2E tests (full pipeline)\n\nAll stages must pass before merge.",
+          "tokensEst": 47,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 47,
+            "cumulative": 47,
+            "risk": 0,
+            "density": 23.5
+          }
+        },
+        {
+          "id": "testing.rules.common_issues",
+          "source": "testing.rules.md",
+          "title": "Common Issues",
+          "headingNumber": "6",
+          "level": 2,
+          "content": "| Issue | Cause | Fix |\n|-------|-------|-----|\n| Timeout | Async test not resolving | Ensure `await` on async operations, increase timeout for E2E |\n| Prisma not connected | Missing Docker/Pg | Run `docker compose up -d` |\n| Module not found | Build stale | Run `npm run build` |\n| Coverage low | Missing test paths | Add `--collectCoverageFrom` patterns |\n| Test pollution | Shared state | Use `beforeEach`/`afterEach` for clean state |\n\n---\n\n**End of Testing Rules**",
+          "tokensEst": 118,
+          "tags": [
+            "backend",
+            "testing"
+          ],
+          "relevanceScore": 0,
+          "priority": "medium",
+          "cost": {
+            "self": 118,
+            "cumulative": 118,
+            "risk": 0,
+            "density": 59
+          }
+        }
+      ]
+    }
+  ],
+  "sectionCount": 179,
+  "dependencyGraph": {
+    "nodeCount": 179,
+    "edgeCount": 42,
+    "density": 0.0013181846713953926,
+    "avgEdgesPerNode": 0.2346368715083799,
+    "cycleCount": 0,
+    "stronglyConnectedSize": 0
+  },
+  "similarityGraph": {
+    "nodeCount": 179,
+    "edgeCount": 385,
+    "density": 0.0120833594877911,
+    "avgEdgesPerNode": 2.1508379888268156
+  },
+  "generatedAt": "2026-06-09T23:25:59.472Z"
+}

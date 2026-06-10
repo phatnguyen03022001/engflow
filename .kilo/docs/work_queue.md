@@ -5,6 +5,35 @@
 ## Active
 
 ## Finished
+### Verification Independence Epic — ADR-018 + ADR-017 Falsification
+- **Status**: Completed
+- **Date**: 2026-06-10
+- **Trigger**: CTO Executive Order — verify ADR-017 core premise (that POST_VERIFY bash execution is blocked by platform)
+- **Execution Chain**: 17 agent hops across 6 agent types (ASK → PLAN → ARCH-QUICK → CODE → POST_VERIFY → ARCH-DEEP → CODE → ARCH-QUICK → POST_VERIFY → CODE ×4 → ASK)
+- **Delivered**:
+  - Canary test protocol executed — empirically proven POST_VERIFY bash execution works (BASH_IS_WORKING verdict)
+  - ADR-017 falsified — premise that platform blocks bash was incorrect
+  - ADR-018 created and implemented — POST_VERIFY restored as build/lint/test executor with direct execution (no Docker sandbox)
+  - ADR-017 status: Active → Superseded (by ADR-018)
+  - ADR-018 status: Active — full ADR document with methodology, findings, and invariants
+  - Variant fields added to architect-quick, pre_verify, post_verify for Kilo UI compatibility
+  - tool_output config added (max_lines: 50, max_bytes: 10240) for token optimization
+- **Key Decisions**:
+  - REJECTED: Transition Guard approach (architectural violation of Guard's single responsibility)
+  - APPROVED: Canary test to verify ADR-017 premise directly
+  - EMPIRICALLY PROVEN: POST_VERIFY bash execution works
+- **Files Created**:
+  - `docs/decisions/0017a-assumption-verification-findings.md`
+  - `docs/decisions/0018-restore-post-verify-verification.md`
+- **Files Modified**:
+  - `.kilo/rules/agents/agent.rules.md` — 8 ADR-018 edits (POST_VERIFY §3.4 runtime verification, §3.7 sandbox removed, §3.3.2-3.3.3 QA/Rules, CODE §3.7 escalation)
+  - `.kilo/kilo.jsonc` — CODE prompt, POST_VERIFY prompt, variant fields, tool_output, JSONC quote fix
+  - `~/.config/kilo/kilo.jsonc` — agent block synced with local
+  - `docs/decisions.md` — ADR index updated
+- **Build**: zero errors
+- **Tests**: 408/408 pass (27 suites)
+- **Changes**: 2 new ADR documents, 4 edited files, 0 schema changes, 0 backend code changes
+
 ### Cost Optimization Epic — Phase 1-3
 - **Status**: Completed
 - **Date**: 2026-06-10

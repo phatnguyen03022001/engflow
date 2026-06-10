@@ -190,7 +190,7 @@ export class ContextManagerService {
 
     try {
       // Find nodes related to the task module
-      const moduleName = this.inferModuleFromTask(taskType);
+      const moduleName = this.mapTaskTypeToModule(taskType);
       const { items } = await this.knowledgeGraphService.findNodes({
         module: moduleName,
         take: 30,
@@ -330,15 +330,20 @@ export class ContextManagerService {
   }
 
   /**
-   * Infer a knowledge-graph module name from a task type string.
+   * Map a task type string to a knowledge-graph module name.
    * e.g. "LEVEL_2:evaluation" -> "evaluation", "LEVEL_1:auth" -> "auth"
+   *
+   * Behavioral invariant: returns IDENTICAL strings to the legacy
+   * inferModuleFromTask for all existing taskType inputs.
+   * Module-qualified types (LEVEL_2:evaluation) bind via SystemModule;
+   * legacy tokens (LEVEL_1, LEVEL_3) preserve their ontology-distinct mappings.
    */
-  private inferModuleFromTask(taskType: string): string {
+  private mapTaskTypeToModule(taskType: string): string {
     const parts = taskType.split(':');
     if (parts.length >= 2) {
       return parts[1];
     }
-    // Common task types without module prefix
+    // Legacy routing tokens — ontologically distinct from SystemModule
     const known: Record<string, string> = {
       LEVEL_1: 'shared',
       LEVEL_2: 'evaluation',

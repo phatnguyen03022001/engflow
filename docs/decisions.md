@@ -28,6 +28,7 @@ See `docs/decisions/` for individual ADR documents.
 | ADR-017 | Execution Shift to CODE Agent | Superseded | Runtime verification moves from POST_VERIFY to CODE due to platform permission constraint. *(Superseded by ADR-018 — premise empirically falsified)* |
 | ADR-018 | Restore POST_VERIFY Runtime Verification | Active | Empirically falsifies ADR-017; restores POST_VERIFY as build/lint/test executor; preserves ADR-017 quality standards as self-audit. |
 | ADR-ASK-001 | Agent Routing Governance Specification | Active | Establishes ASK v2 as the Virtual CTO Router — unified routing + advisory gateway. Defines 8-agent catalog, 4 pillar principles, standardized routing output format, decision matrix, and session management rules. Source of truth for all ASK v2 routing behavior. |
+| ADR-ASK-002 | 3-Layer Authority Model Specification | Active | Defines the 3-layer authority model (Definition → Interpretation → Execution) with enforcement boundary map, conflict resolution algorithm, and token boundary implications for the AI Software Factory. |
 
 ---
 

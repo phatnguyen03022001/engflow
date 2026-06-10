@@ -10,9 +10,24 @@ import { RuleMapper, getRuleMapper } from './rule-mapper';
  * Soft token budget for the assembled context string.
  * Approximate: ~1 token per 4 characters for English markdown text.
  */
-const TOKEN_BUDGET = 2000;
+const DEFAULT_TOKEN_BUDGET = 2000;
 const CHARS_PER_TOKEN = 4;
-const CHAR_BUDGET = TOKEN_BUDGET * CHARS_PER_TOKEN; // ~8000
+
+/**
+ * Per-task-level token budgets for context assembly.
+ * Map is keyed by taskType string from guard's routing_level.
+ */
+const TASK_TYPE_BUDGETS: Record<string, number> = {
+  'default': 2000,
+  'LEVEL_1': 1000,
+  'LEVEL_2': 2000,
+  'LEVEL_3': 4000,
+};
+
+function getCharBudget(taskType: string): number {
+  const tokens = TASK_TYPE_BUDGETS[taskType] ?? DEFAULT_TOKEN_BUDGET;
+  return tokens * CHARS_PER_TOKEN;
+}
 
 // ─── ContentStripper ────────────────────────────────────────────────────
 
@@ -60,7 +75,7 @@ export class ContentStripper {
       const entryChars = entry.length;
 
       // Budget check: add if within budget, stop if exceeded
-      if (charCount + entryChars > CHAR_BUDGET && parts.length > 0) {
+      if (charCount + entryChars > getCharBudget(taskType) && parts.length > 0) {
         // We already have at least one file; stop here
         break;
       }

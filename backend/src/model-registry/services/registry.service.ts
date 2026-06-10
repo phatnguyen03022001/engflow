@@ -1,11 +1,11 @@
 /* @lifecycle ACTIVE — CRUD service for model providers and models (ADR-010) */
 
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, ModelCapability } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateProviderDto } from '../dto/create-provider.dto';
 import { CreateModelDto } from '../dto/create-model.dto';
-import { ModelTier, ModelCapability } from '../interfaces/model-registry.interface';
+import { ModelTier } from '../interfaces/model-registry.interface';
 
 @Injectable()
 export class RegistryService {

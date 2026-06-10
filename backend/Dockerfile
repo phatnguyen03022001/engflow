@@ -19,6 +19,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/prisma ./prisma
+RUN mkdir -p /app/uploads && chown nestjs:nodejs /app/uploads
 USER nestjs
 EXPOSE 3001
 CMD ["node", "dist/main"]

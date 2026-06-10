@@ -1,6 +1,7 @@
 /* @lifecycle ACTIVE — Unit tests for Guard Runtime state machine (TASK-030b) */
 
 import { GuardService, IGuardService, resetGuard } from '../index';
+import { getWorkingMemory, resetWorkingMemory } from '../../context/index';
 
 // ─── Helpers ────────────────────────────────────────────────────────────
 
@@ -80,6 +81,11 @@ describe('GuardService', () => {
     guard = createGuard();
   });
 
+  afterEach(() => {
+    resetGuard();
+    resetWorkingMemory();
+  });
+
   describe('initial state', () => {
     it('should start in IDLE state', () => {
       const state = guard.getState();
@@ -99,6 +105,84 @@ describe('GuardService', () => {
         execution_id: 'custom-id',
       });
       expect(customGuard.getState().execution_id).toBe('custom-id');
+    });
+  });
+
+  describe('routing level persistence', () => {
+    it('should persist routing level across non-router hops', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan', 'LEVEL_3');
+      expect(guard.getState().routing_level).toBe('LEVEL_3');
+
+      guard.transition('plan', 'architect');
+      expect(guard.getState().routing_level).toBe('LEVEL_3');
+
+      guard.transition('architect', 'pre_verify', 'Architecture approved');
+      expect(guard.getState().routing_level).toBe('LEVEL_3');
+
+      guard.transition('pre_verify', 'code', 'PASS');
+      expect(guard.getState().routing_level).toBe('LEVEL_3');
+
+      guard.transition('code', 'post_verify');
+      expect(guard.getState().routing_level).toBe('LEVEL_3');
+    });
+
+    it('should be undefined on fresh guard before Router runs', () => {
+      const freshGuard = createGuard();
+      expect(freshGuard.getState().routing_level).toBeUndefined();
+    });
+
+    it('should not allow non-router agents to overwrite routing_level', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan', 'LEVEL_2');
+      expect(guard.getState().routing_level).toBe('LEVEL_2');
+
+      guard.transition('plan', 'pre_verify', 'No architecture issues');
+      expect(guard.getState().routing_level).toBe('LEVEL_2');
+
+      guard.transition('pre_verify', 'code', 'PASS');
+      expect(guard.getState().routing_level).toBe('LEVEL_2');
+    });
+  });
+
+  describe('working memory delta', () => {
+    it('should return only new entries after checkpoint', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan', 'LEVEL_3');
+      guard.transition('plan', 'architect');
+
+      // After 3 transitions, delta from hop 1 gives entries added since hop 1
+      // (the plan entry at transition 3, which was committed inside hop 2's checkpoint)
+      const delta = getWorkingMemory().getDelta('architect', 1);
+      expect(delta.state_diff.new_entries).toHaveLength(1);
+    });
+
+    it('should include execution_id in formatted output', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan', 'LEVEL_3');
+
+      const formatted = getWorkingMemory().getDeltaFormatted('plan', 1);
+      expect(formatted).toContain('**Execution**');
+      expect(formatted).toContain('**Actions recorded**');
+    });
+
+    it('should include compressed summary with full history', () => {
+      guard.transition('REQUEST', 'router');
+      guard.transition('router', 'plan', 'LEVEL_3');
+      guard.transition('plan', 'pre_verify', 'No architecture issues');
+
+      const formatted = getWorkingMemory().getDeltaFormatted('pre_verify', 2);
+      expect(formatted).toContain('### Session Summary');
+      expect(formatted).toContain('[hop 1]');
+      expect(formatted).toContain('[hop 2]');
+    });
+
+    it('should show empty context for first hop before any entry is recorded', () => {
+      guard.transition('REQUEST', 'router');
+
+      // HOOK 1 skipped for REQUEST → no entries. getDeltaFormatted handles null state.
+      const formatted = getWorkingMemory().getDeltaFormatted('router', 0);
+      expect(formatted).toContain('No actions recorded yet');
     });
   });
 

@@ -1,0 +1,145 @@
+{
+  "_meta": {
+    "description": "Execution policy IR — encodes execution.contract.md §§2–6 as a structured intermediate representation",
+    "version": "1.0.0",
+    "source": ".kilo/rules/system/contracts/execution.contract.md",
+    "dual_read": true,
+    "note": "Raw contract files remain canonical source of truth. This policy file is a read-only cache/IR and never overrides the source.",
+    "flags": {
+      "edges_and_forbidden_dual_spec": "edges defines all allowed transitions; forbidden explicitly lists transitions most likely to be confused or mistakenly attempted. Every valid path must appear in edges. Every entry in forbidden is also absent from edges (implied disallowed) but is declared explicitly because it is a common source of confusion or an enforcement invariant. NOTE: The wildcard forbidden entry '* → PLAN' temporally applies post-lock (after PLAN is finalized). The allowed edges ROUTER → PLAN and ARCH → PLAN are pre-lock routing transitions that occur before PLAN is finalized, so they are not in conflict with the post-lock invariant."
+    }
+  },
+
+  "states": [
+    { "id": "REQUEST",     "type": "entry",     "description": "Task submission entry point" },
+    { "id": "ROUTER",      "type": "agent",     "description": "Task classification and dispatch" },
+    { "id": "PLAN",        "type": "agent",     "description": "Execution decomposition and planning" },
+    { "id": "ARCH",        "type": "agent",     "description": "Architecture review and ADR decisions" },
+    { "id": "PRE_VERIFY",  "type": "gate",      "description": "Pre-execution feasibility and constraint validation" },
+    { "id": "CODE",        "type": "agent",     "description": "Primary implementation agent" },
+    { "id": "POST_VERIFY", "type": "gate",      "description": "Post-execution quality assurance and runtime verification" },
+    { "id": "COMMIT",      "type": "terminal",  "description": "Terminal state — task marked done, execution lock released" },
+    { "id": "DEBUG",       "type": "agent",     "description": "Defect resolution — diagnosed and fixes PostVerify failures" },
+    { "id": "BLOCK",       "type": "terminal",  "description": "Terminal state — unrecoverable issue, escalation to HUMAN" }
+  ],
+
+  "edges": [
+    { "from": "REQUEST",     "to": "ROUTER",      "condition": "Always",                                            "ref": "§2.2" },
+    { "from": "ROUTER",      "to": "PLAN",        "condition": "LEVEL_2 or LEVEL_3 task",                          "ref": "§2.2" },
+    { "from": "ROUTER",      "to": "CODE",        "condition": "LEVEL_1, simple implementation with no planning",   "ref": "§2.2" },
+    { "from": "ROUTER",      "to": "ARCH",        "condition": "LEVEL_3, architecture-only analysis",              "ref": "§2.2" },
+    { "from": "PLAN",        "to": "ARCH",        "condition": "Architecture review needed",                       "ref": "§2.2" },
+    { "from": "PLAN",        "to": "PRE_VERIFY",  "condition": "No architecture issues",                           "ref": "§2.2" },
+    { "from": "ARCH",        "to": "PLAN",        "condition": "Revision needed (max 1 revision)",                  "ref": "§2.2, §4.3" },
+    { "from": "ARCH",        "to": "PRE_VERIFY",  "condition": "Architecture approved",                            "ref": "§2.2, §4.3" },
+    { "from": "ARCH",        "to": "BLOCK",       "condition": "Terminal block — unrecoverable architecture issue", "ref": "§4.3" },
+    { "from": "PRE_VERIFY",  "to": "CODE",        "condition": "Gate decision: PASS or FLAG",                      "ref": "§2.2, §4.4" },
+    { "from": "PRE_VERIFY",  "to": "ARCH",        "condition": "Gate decision: BLOCK — requires architecture review", "ref": "§2.2, §4.4" },
+    { "from": "CODE",        "to": "POST_VERIFY", "condition": "Implementation complete",                          "ref": "§2.2, §4.5" },
+    { "from": "POST_VERIFY", "to": "COMMIT",      "condition": "Gate decision: PASS or FLAG",                      "ref": "§2.2, §4.6" },
+    { "from": "POST_VERIFY", "to": "CODE",        "condition": "Gate decision: FAIL — retry (max 1)",              "ref": "§2.2, §4.6" },
+    { "from": "POST_VERIFY", "to": "DEBUG",       "condition": "Gate decision: FAIL after CODE retry exhausted",    "ref": "§2.2, §4.6" },
+    { "from": "POST_VERIFY", "to": "ARCH",        "condition": "Gate decision: BLOCK",                             "ref": "§2.2, §4.6" },
+    { "from": "DEBUG",       "to": "POST_VERIFY", "condition": "Fix applied — re-verify",                          "ref": "§2.2, §4.8" },
+    { "from": "DEBUG",       "to": "ARCH",        "condition": "BLOCK — cannot fix, escalate to architecture",      "ref": "§2.2, §4.8" }
+  ],
+
+  "forbidden": [
+    { "from": "*",          "to": "PLAN",        "reason": "After PLAN finalized, no re-planning",                                  "ref": "§2.3" },
+    { "from": "CODE",       "to": "PLAN",        "reason": "Single-pass execution — CODE never returns to planning",                "ref": "§2.3" },
+    { "from": "POST_VERIFY","to": "PLAN",        "reason": "Execution complete — no re-planning after verification",                "ref": "§2.3" },
+    { "from": "ROUTER",     "to": "ROUTER",      "reason": "No re-routing — ROUTER is single-use per session",                     "ref": "§2.3" },
+    { "from": "PLAN",       "to": "PLAN",        "reason": "No re-plan loop",                                                       "ref": "§2.3" },
+    { "from": "CODE",       "to": "CODE",        "reason": "No self-loop (except retry via POST_VERIFY → CODE)",                   "ref": "§2.3" },
+    { "from": "DEBUG",      "to": "PLAN",        "reason": "No re-planning after execution phase",                                 "ref": "§2.3" },
+    { "from": "DEBUG",      "to": "CODE",        "reason": "DEBUG never delegates back to CODE — prevents delegation loops",       "ref": "§2.3" },
+    { "from": "DEBUG",      "to": "PRE_VERIFY",  "reason": "Only POST_VERIFY gates DEBUG output",                                  "ref": "§2.3" },
+    { "from": "COMMIT",     "to": "*",           "reason": "COMMIT is terminal — no transitions out",                              "ref": "§4.7" },
+    { "from": "BLOCK",      "to": "*",           "reason": "BLOCK is terminal — no transitions out",                               "ref": "§4.3" }
+  ],
+
+  "gate_decisions": {
+    "PRE_VERIFY": {
+      "PASS":  { "to": "CODE",   "description": "Plan approved for implementation" },
+      "FLAG":  { "to": "CODE",   "description": "Non-blocking concerns documented; proceed to implementation" },
+      "BLOCK": { "to": "ARCH",   "description": "Critical issue requires architecture review before implementation" }
+    },
+    "POST_VERIFY": {
+      "PASS":  { "to": "COMMIT", "description": "All runtime checks pass; static analysis clean" },
+      "FLAG":  { "to": "COMMIT", "description": "Runtime checks pass; non-blocking static flags documented" },
+      "FAIL":  {
+        "to": ["CODE", "DEBUG"],
+        "condition": "First FAIL → CODE (max 1 retry); subsequent FAIL after CODE retry exhausted → DEBUG",
+        "description": "Runtime check failed or blocking static issue"
+      },
+      "BLOCK": { "to": "ARCH",   "description": "Security issue, architecture violation, or repeated FAIL beyond retry limit" }
+    }
+  },
+
+  "execution_lock": {
+    "states": ["IDLE", "ROUTING", "PLANNING", "LOCKED", "EXECUTING", "VERIFYING", "COMMITTED", "BLOCKED"],
+    "phases": ["IDLE", "ROUTING", "PLANNING", "ARCH_REVIEWING", "PRE_VERIFYING", "EXECUTING", "POST_VERIFYING", "COMMITTED", "BLOCKED"],
+    "activation": "Lock activates on PLAN → PRE_VERIFY transition (first transition OUT of planning)",
+    "schema": {
+      "execution_id":  "uuid-v7",
+      "state":         "IDLE | ROUTING | PLANNING | LOCKED | EXECUTING | VERIFYING | COMMITTED | BLOCKED",
+      "phase":         "IDLE | ROUTING | PLANNING | ARCH_REVIEWING | PRE_VERIFYING | EXECUTING | POST_VERIFYING | COMMITTED | BLOCKED",
+      "plan_hash":     "sha256 | null",
+      "current_agent": "router | plan | architect | code | debug | pre_verify | post_verify | null",
+      "hop_count":     0,
+      "locked":        false,
+      "timestamp":     "ISO-8601",
+      "retry_count": {
+        "code":              0,
+        "arch_plan_revision": 0
+      }
+    },
+    "ref": "§3"
+  },
+
+  "escalation_rules": [
+    { "trigger": "PRE_VERIFY gate BLOCK decision",         "action": "Route to ARCH for architecture review",            "severity": "HIGH",     "ref": "§6" },
+    { "trigger": "POST_VERIFY gate BLOCK decision",        "action": "Route to ARCH for architecture review",            "severity": "HIGH",     "ref": "§6" },
+    { "trigger": "Runtime Guard violation",                "action": "Escalate to HUMAN — guard violation is critical",  "severity": "CRITICAL", "ref": "§6" },
+    { "trigger": "Architecture conflict (unresolvable)",   "action": "Escalate to HUMAN for binding resolution",         "severity": "CRITICAL", "ref": "§6" },
+    { "trigger": "Security issue detected",                "action": "Escalate to HUMAN immediately",                    "severity": "CRITICAL", "ref": "§6" }
+  ],
+
+  "retry_limits": [
+    {
+      "scenario": "CODE → POST_VERIFY FAIL",
+      "action": "Return to CODE for fix",
+      "max_retries": 1,
+      "on_exhaust": "Route to DEBUG (or ARCH BLOCK if DEBUG also fails)",
+      "ref": "§5"
+    },
+    {
+      "scenario": "ARCH → PLAN revision",
+      "action": "Return to PLAN for revision",
+      "max_retries": 1,
+      "on_exhaust": "ARCH enters BLOCK (terminal)",
+      "ref": "§5"
+    },
+    {
+      "scenario": "DEBUG → POST_VERIFY FAIL",
+      "action": "Escalate to ARCH — BLOCK (terminal)",
+      "max_retries": 0,
+      "on_exhaust": "N/A — escalation is the only outcome",
+      "ref": "§5"
+    },
+    {
+      "scenario": "Runtime error during CODE execution",
+      "action": "Auto-retry CODE",
+      "max_retries": 2,
+      "on_exhaust": "Route to POST_VERIFY FAIL (treated as CODE retry exhausted → DEBUG)",
+      "ref": "§5"
+    },
+    {
+      "scenario": "Guard violation (state machine bypass attempt)",
+      "action": "Block execution + escalate to HUMAN",
+      "max_retries": 0,
+      "on_exhaust": "N/A — HUMAN intervention required",
+      "ref": "§5"
+    }
+  ]
+}

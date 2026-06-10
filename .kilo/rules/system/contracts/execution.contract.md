@@ -4,6 +4,7 @@
 # Execution Contract
 
 ## 1. Purpose
+<!-- @agent: all — This contract governs all agent transitions, execution lock semantics, and terminal states. All agents must understand the state machine they operate within. -->
 
 Defines the canonical execution state machine for Floweng AI Software Factory.
 This contract governs all agent transitions, execution lock semantics, and terminal states.
@@ -11,6 +12,7 @@ This contract governs all agent transitions, execution lock semantics, and termi
 ---
 
 ## 2. State Machine
+<!-- @agent: all — Defines the canonical DAG, transition table, and forbidden transitions. Every agent references this section to understand allowed/forbidden routing. -->
 
 ### 2.1 Valid Transitions (DAG)
 
@@ -84,6 +86,7 @@ This contract governs all agent transitions, execution lock semantics, and termi
 ```
 
 ### 2.2 Allowed Transitions
+<!-- @agent: all — Table of 17 allowed transitions. Agents: reference this when routing or transitioning. -->
 
 | From | To | Condition |
 |------|----|-----------|
@@ -106,6 +109,7 @@ This contract governs all agent transitions, execution lock semantics, and termi
 | debug | ARCH | BLOCK (cannot fix) |
 
 ### 2.3 Forbidden Transitions
+<!-- @agent: all — Forbidden transitions that must never occur. Guard enforces these at runtime. -->
 
 | From → To | Reason |
 |-----------|--------|
@@ -122,6 +126,7 @@ This contract governs all agent transitions, execution lock semantics, and termi
 ---
 
 ## 3. Execution Lock
+<!-- @agent: guard, plan, architect, code, debug — Execution lock governs when state mutations are frozen. Relevant for all agents that participate in locked execution. -->
 
 ### 3.1 Lock States
 
@@ -153,6 +158,7 @@ Lock activates on "plan → pre_verify" (first transition OUT of planning).
 ---
 
 ## 4. Agent Definitions
+<!-- @agent: all — Each subsection defines one agent's allowed and denied transitions. Agents reference their own definition. -->
 
 ### 4.1 ROUTER
 
@@ -236,6 +242,7 @@ Lock activates on "plan → pre_verify" (first transition OUT of planning).
 ---
 
 ## 5. Retry & Recovery
+<!-- @agent: all — Retry limits and recovery paths. Code, debug, architect, and guard agents must respect these limits. -->
 
 | Scenario | Action | Max Retries |
 |----------|--------|-------------|
@@ -248,6 +255,7 @@ Lock activates on "plan → pre_verify" (first transition OUT of planning).
 ---
 
 ## 6. Escalation
+<!-- @agent: all — Escalation paths for blocked or security-sensitive transitions. All agents escalate to architect or human as specified. -->
 
 - PreVerify BLOCK → ARCH
 - PostVerify BLOCK → ARCH

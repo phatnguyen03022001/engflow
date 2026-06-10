@@ -3,6 +3,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { QueryAnalyticsDto } from '../dto/query-analytics.dto';
+import { PaginationQuery } from '../../shared/ontology/system-ontology';
 
 /**
  * Aggregate row returned by getAgentPerformance.
@@ -64,8 +65,8 @@ export class AnalyticsService {
     filters: QueryAnalyticsDto,
   ): Promise<{ items: AgentPerformanceRow[]; total: number }> {
     const where = this.buildDateWhere(filters);
-    const skip = filters.skip ?? 0;
-    const take = Math.min(filters.take ?? 20, 100);
+    const { skip = 0, take: rawTake = 20 } = filters as PaginationQuery;
+    const take = Math.min(rawTake, 100);
 
     // Success rate by finalOutcome from AgentExecution
     const outcomeGroups = await this.prisma.agentExecution.groupBy({
@@ -165,8 +166,8 @@ export class AnalyticsService {
 
     const rows = await this.prisma.$queryRawUnsafe<ThroughputRow[]>(sql, ...params);
 
-    const skip = filters.skip ?? 0;
-    const take = Math.min(filters.take ?? 20, 100);
+    const { skip = 0, take: rawTake = 20 } = filters as PaginationQuery;
+    const take = Math.min(rawTake, 100);
     const sliced = rows.slice(skip, skip + take);
 
     return { items: sliced, total: rows.length };
@@ -202,8 +203,8 @@ export class AnalyticsService {
       orderBy: { _avg: { durationMs: 'desc' } },
     });
 
-    const skip = filters.skip ?? 0;
-    const take = Math.min(filters.take ?? 20, 100);
+    const { skip = 0, take: rawTake = 20 } = filters as PaginationQuery;
+    const take = Math.min(rawTake, 100);
 
     const items: BottleneckRow[] = groups.map((g) => ({
       agentType: g.agentType,
@@ -258,8 +259,8 @@ export class AnalyticsService {
 
     const rows = await this.prisma.$queryRawUnsafe<CostTrendRow[]>(sql, ...params);
 
-    const skip = filters.skip ?? 0;
-    const take = Math.min(filters.take ?? 20, 100);
+    const { skip = 0, take: rawTake = 20 } = filters as PaginationQuery;
+    const take = Math.min(rawTake, 100);
     const sliced = rows.slice(skip, skip + take);
 
     return { items: sliced, total: rows.length };

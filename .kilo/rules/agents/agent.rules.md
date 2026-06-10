@@ -19,14 +19,7 @@ Primary implementation agent. Feature development, testing, refactoring, bug fix
 
 ### 1.3 Source of Truth Hierarchy
 
-1. CI / Automated Validation
-2. ADRs (docs/decisions.md)
-3. Constitution (docs/constitution.md)
-4. Architecture (docs/architecture.md)
-5. System Contracts (.kilo/rules/system/contracts/)
-6. Agent Rules (this file)
-7. Task Requirements
-8. Codebase
+See [Source of Truth Contract](../system/contracts/source-of-truth.contract.md) for the authoritative hierarchy. Agent Rules hold priority 6 in that hierarchy.
 
 ### 1.4 Implementation Rules
 
@@ -47,13 +40,7 @@ Primary implementation agent. Feature development, testing, refactoring, bug fix
 
 ### 1.6 Lifecycle Obligation (ADR-008)
 
-Every new file MUST include a lifecycle declaration as the first line comment.
-
-Format: `/* @lifecycle <STATE> — <brief reason> */`
-
-Valid states: ACTIVE, GENERATED, TEMPORARY, EXPERIMENTAL, ARCHIVED
-
-Default for new source files: ACTIVE
+Per ADR-008, every new file MUST include a `@lifecycle` declaration as its first line comment. Valid states are defined in ADR-008 (`docs/decisions/008-lifecycle-declarations.md`). See [Execution Contract](../system/contracts/execution.contract.md) for the governing execution framework.
 
 ### 1.7 Guarded Execution
 
@@ -123,13 +110,7 @@ Brief assessment
 
 ### 2.6 Gate Decisions
 
-| Decision | Action |
-|----------|--------|
-| PASS | Route to CODE |
-| FLAG | Route to CODE (with documented concerns) |
-| BLOCK | Route to ARCH |
-
-The Runtime Guard enforces these transitions.
+See [Execution Contract §4.4 (PRE_VERIFY)](../system/contracts/execution.contract.md) for authoritative gate transitions. The Runtime Guard enforces these transitions.
 
 ## 3. Post-Verify Agent
 
@@ -288,14 +269,7 @@ Timeout contract (enforced by POST_VERIFY):
 
 ### 3.8 Gate Decisions
 
-| Decision | Action | Condition |
-|----------|--------|-----------|
-| PASS | Route to COMMIT | Runtime checks pass + static analysis clean |
-| FLAG | Route to COMMIT (with documented concerns) | Runtime checks pass + non-blocking static flags |
-| FAIL | Route to CODE (retry, max 1) | Runtime check fails OR blocking static issue |
-| BLOCK | Route to ARCH | Security issue, architecture violation, or repeated FAIL > retry limit |
-
-The Runtime Guard enforces these transitions.
+See [Execution Contract §4.6 (POST_VERIFY)](../system/contracts/execution.contract.md) for authoritative gate transitions. The Runtime Guard enforces these transitions.
 
 ### 3.9 Escalation
 

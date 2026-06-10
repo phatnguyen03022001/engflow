@@ -1,0 +1,4 @@
+{
+  "extends": "./guard/tsconfig.json",
+  "include": ["./**/*.ts"]
+}

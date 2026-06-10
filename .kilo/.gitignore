@@ -1,7 +1,8 @@
-node_modules/
-dist/
-coverage/
-.env
-prisma/dev.db
-.next/
-.kilo/node_modules/
+node_modules
+package.json
+package-lock.json
+pnpm-lock.yaml
+bun.lock
+yarn.lock
+.gitignore
+agent-manager.json
