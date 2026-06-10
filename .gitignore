@@ -5,3 +5,11 @@ dist/
 *.log
 .DS_Store
 coverage/
+
+# ─── Kilo Runtime Data ───────────────────────────────────────────
+.kilo/context/archive/
+.kilo/telemetry/traces/
+.kilo/telemetry/cost/
+.kilo/guard/audit.log
+.kilo/execution-state.json
+.kilo/context/working-memory.json

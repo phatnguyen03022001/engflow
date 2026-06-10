@@ -1,0 +1,19 @@
+/* @lifecycle ACTIVE — TypeScript config for Telemetry module (ADR-016) */
+
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2021",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "types": ["jest", "node"],
+    "outDir": "./dist"
+  },
+  "include": ["./**/*.ts"]
+}
