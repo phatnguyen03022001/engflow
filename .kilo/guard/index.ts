@@ -14,6 +14,7 @@ import type {
   NonNullAgent,
 } from './types';
 import type { WorkingMemoryEntry, WorkingMemoryAgent } from '../context/types';
+import type { FragmentRegistryResult } from '../context-compiler/ir/types';
 import { getWorkingMemory } from '../context/index';
 import { getContentStripper } from '../context/content-stripper';
 
@@ -66,6 +67,26 @@ const FORBIDDEN_TRANSITIONS = new Set<string>([
   'debug|pre_verify', // DEBUG → PRE_VERIFY only PostVerify gates debug output
 ]);
 
+// ─── Benchmark Types ──────────────────────────────────────────────────
+
+export interface BenchmarkMetrics {
+  cache_hits: number;
+  cache_misses: number;
+  wm_chars: number;
+  rule_chars: number;
+  total_chars: number;
+}
+
+function createEmptyBenchmarkMetrics(): BenchmarkMetrics {
+  return {
+    cache_hits: 0,
+    cache_misses: 0,
+    wm_chars: 0,
+    rule_chars: 0,
+    total_chars: 0,
+  };
+}
+
 // ─── Retry Limits ──────────────────────────────────────────────────────
 
 const MAX_CODE_RETRY = 1;
@@ -93,6 +114,7 @@ function createDefaultLock(): ExecutionLock {
     locked: false,
     timestamp: new Date().toISOString(),
     retry_count: { ...DEFAULT_RETRY },
+    // routing_level intentionally omitted — starts undefined until Router sets it
   };
 }
 
@@ -217,6 +239,12 @@ export interface IGuardService {
 export class GuardService implements IGuardService {
   private state: ExecutionLock;
   private audited: boolean;
+  /** Session-scoped cache for ContentStripper output. Cleared on COMMIT. */
+  private contextCache = new Map<string, string>();
+  /** Pre-computed fragments loaded from FragmentRegistry. Loaded once per session. */
+  private fragments: FragmentRegistryResult | null = null;
+  /** Benchmark counters (accumulated across all HOOK 2 invocations). */
+  private _benchmark: BenchmarkMetrics = createEmptyBenchmarkMetrics();
 
   constructor(initialState?: Partial<ExecutionLock>) {
     this.state = this.loadOrCreate(initialState);
@@ -408,6 +436,14 @@ export class GuardService implements IGuardService {
       }
     }
 
+    // 4a. Capture routing level from Router (only on router→* transitions)
+    if (from === 'router' && condition) {
+      const level = this.extractRoutingLevel(condition);
+      if (level) {
+        this.state.routing_level = level;
+      }
+    }
+
     // 5. Retry counting
     if (from === 'post_verify' && to === 'code') {
       this.state.retry_count.code += 1;
@@ -446,19 +482,62 @@ export class GuardService implements IGuardService {
         brief_summary: this.inferSummary(from, to, condition),
       };
       getWorkingMemory().appendEntry(this.state.execution_id, wmEntry);
+      // Record hop checkpoint so getDelta() can diff since last hop
+      getWorkingMemory().commit(from, this.inferSummary(from, to, condition));
     }
 
     // ── Archive on COMMIT ─────────────────────────────────────────
     if (to === 'COMMIT') {
       getWorkingMemory().archive(this.state.execution_id);
+      this.contextCache.clear();
     }
 
     // ── HOOK 2 (hydrate): Build context for the incoming agent ───
     let workingMemoryContext: string | undefined;
     if (to !== 'COMMIT' && isAgent(to)) {
-      const wmContext = getWorkingMemory().getContextFor(to);
-      const ruleContext = getContentStripper().assembleContext(to, 'default');
+      const wmContext = getWorkingMemory().getDeltaFormatted(
+        to,
+        Math.max(0, this.state.hop_count - 1),
+      );
+      const taskType = this.state.routing_level || 'default';
+      const cacheKey = `ctx:${this.state.execution_id}:${to}:${taskType}`;
+      let ruleContext = this.contextCache.get(cacheKey);
+
+      // ── Benchmark: cache hit/miss ──────────────────────────────
+      const _isBm = process.env.KILO_BENCHMARK === '1';
+      if (_isBm) {
+        if (ruleContext !== undefined) {
+          this._benchmark.cache_hits += 1;
+        } else {
+          this._benchmark.cache_misses += 1;
+        }
+      }
+
+      if (!ruleContext) {
+        ruleContext = getContentStripper().assembleContext(to, taskType);
+        this.contextCache.set(cacheKey, ruleContext);
+      }
       workingMemoryContext = wmContext + '\n---\n' + ruleContext;
+
+      // ── Benchmark: wm/rule char counts (pre-fragments) ─────────
+      if (_isBm) {
+        this._benchmark.wm_chars += wmContext.length;
+        this._benchmark.rule_chars += (ruleContext || '').length;
+      }
+
+      // Inject pre-computed shared fragments (from FragmentRegistry)
+      const fragments = this.loadFragments();
+      if (fragments && fragments.fragments.length > 0) {
+        const sharedContent = fragments.fragments
+          .map(f => f.content)
+          .join('\n\n');
+        workingMemoryContext = '## Shared Context\n\n' + sharedContent + '\n\n' + workingMemoryContext;
+      }
+
+      // ── Benchmark: total chars (post-fragment injection) ──────
+      if (_isBm && workingMemoryContext) {
+        this._benchmark.total_chars += workingMemoryContext.length;
+      }
     }
 
     return {
@@ -476,6 +555,14 @@ export class GuardService implements IGuardService {
   }
 
   /**
+   * Return a copy of the accumulated benchmark metrics.
+   * Only meaningful when KILO_BENCHMARK=1 is set.
+   */
+  getBenchmarkMetrics(): BenchmarkMetrics {
+    return { ...this._benchmark };
+  }
+
+  /**
    * Reset execution state to default. Optionally override retry counts.
    */
   reset(retry?: Partial<RetryCount>): void {
@@ -483,6 +570,7 @@ export class GuardService implements IGuardService {
     if (retry) {
       this.state.retry_count = { ...DEFAULT_RETRY, ...retry };
     }
+    this._benchmark = createEmptyBenchmarkMetrics();
     this.writeState();
   }
 
@@ -525,6 +613,35 @@ export class GuardService implements IGuardService {
    */
   private normalizeNode(node: string): string {
     return node.toUpperCase();
+  }
+
+  /**
+   * Extract routing level (LEVEL_1/2/3) from a Router transition condition.
+   * Uses regex to handle formats: "LEVEL_3", "LEVEL_1, simple implementation", etc.
+   * Returns empty string when no level is found.
+   */
+  private extractRoutingLevel(condition: string): string {
+    const match = condition.match(/LEVEL_[123]/);
+    return match?.[0] ?? '';
+  }
+
+  /**
+   * Load pre-computed FragmentRegistry output from disk.
+   * Cached on first call — subsequent calls return the cached result.
+   * Silent fallback if fragments.json is missing (returns null).
+   */
+  private loadFragments(): FragmentRegistryResult | null {
+    if (this.fragments) return this.fragments;
+    try {
+      const fragPath = path.resolve(__dirname, '../context-compiler/fragments.json');
+      if (fs.existsSync(fragPath)) {
+        const raw = fs.readFileSync(fragPath, 'utf-8');
+        this.fragments = JSON.parse(raw) as FragmentRegistryResult;
+      }
+    } catch {
+      this.fragments = null;
+    }
+    return this.fragments;
   }
 
   /**
